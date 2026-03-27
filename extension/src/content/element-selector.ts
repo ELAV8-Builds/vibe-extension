@@ -236,6 +236,15 @@ function getElementInfo(el: Element): SelectedElement {
 
   const textContent = el.textContent?.trim() || undefined;
 
+  const MAX_INNER_HTML = 50000;
+  let rawHTML: string | undefined;
+  if (el instanceof HTMLElement) {
+    rawHTML = el.innerHTML.trim();
+    if (rawHTML.length > MAX_INNER_HTML) {
+      rawHTML = rawHTML.slice(0, MAX_INNER_HTML) + "<!-- truncated -->";
+    }
+  }
+
   return {
     tag: el.tagName.toLowerCase(),
     id: el.id || undefined,
@@ -246,6 +255,7 @@ function getElementInfo(el: Element): SelectedElement {
         ? textContent.slice(0, 50) + "..."
         : textContent
       : undefined,
+    innerHTML: rawHTML || undefined,
     breadcrumb: getBreadcrumb(el),
     selector: buildUniqueSelector(el),
     context: getLocalContext(el),

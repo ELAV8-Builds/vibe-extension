@@ -1,6 +1,6 @@
 import type { DOMSnapshot, DOMNode } from "../types/api";
 
-const MAX_SNAPSHOT_BYTES = 15 * 1024; // 15KB token budget
+const MAX_SNAPSHOT_BYTES = 80 * 1024; // 80KB — Opus 4 has 200K context
 
 /**
  * Simplify a DOM snapshot to fit within the token budget.

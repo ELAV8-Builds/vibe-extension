@@ -99,6 +99,7 @@ export interface SelectedElement {
   classes: string[];
   styles: Record<string, string>;
   text?: string;
+  innerHTML?: string;
   breadcrumb: string;
   selector: string;
   context?: DOMNode;

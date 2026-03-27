@@ -7,10 +7,10 @@ export const VIBE_STYLE_TAG_ID = "vibe-changes";
 export const VIBE_ANIMATIONS_TAG_ID = "vibe-animations";
 
 // ─── DOM Reader ───
-export const MAX_DOM_DEPTH = 8;
-export const MAX_TEXT_LENGTH = 50;
-export const MAX_SNAPSHOT_SIZE_KB = 10;
-export const COLLAPSED_THRESHOLD = 3; // Collapse after this many similar siblings
+export const MAX_DOM_DEPTH = 12;
+export const MAX_TEXT_LENGTH = 100;
+export const MAX_SNAPSHOT_SIZE_KB = 60;
+export const COLLAPSED_THRESHOLD = 5;
 
 // ─── Element Selector ───
 export const SELECTOR_OVERLAY_ID = "vibe-selector-overlay";

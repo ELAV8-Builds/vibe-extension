@@ -6,7 +6,7 @@ import { simplifySnapshot } from "./dom-processor";
 import { parseAIResponse, AIParseError } from "./change-generator";
 
 const MAX_RETRIES = 2;
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-opus-4-20250514";
 
 const CONVERSATION_SYSTEM_PROMPT = `You are a world-class web design consultant. The user wants to discuss redesigning a live website. Have a natural conversation about design ideas.
 
@@ -102,6 +102,9 @@ function buildConversationPrompt(
     if (selectedElement.styles && Object.keys(selectedElement.styles).length > 0) {
       prompt += `- Current Styles: ${JSON.stringify(selectedElement.styles)}\n`;
     }
+    if (selectedElement.innerHTML) {
+      prompt += `- Current innerHTML:\n${selectedElement.innerHTML}\n`;
+    }
     prompt += `\n`;
   }
 
@@ -161,6 +164,11 @@ function buildApplyPrompt(
     }
     if (selectedElement.styles && Object.keys(selectedElement.styles).length > 0) {
       prompt += `- Current Styles: ${JSON.stringify(selectedElement.styles)}\n`;
+    }
+    if (selectedElement.innerHTML) {
+      prompt += `- Current innerHTML (this is what you can replace with replaceHTML):\n`;
+      prompt += selectedElement.innerHTML;
+      prompt += `\n`;
     }
     if (selectedElement.context) {
       prompt += `- Local Context (parent + siblings):\n`;
@@ -243,7 +251,7 @@ export class AIService {
 
         const response = await this.client.messages.create({
           model: MODEL,
-          max_tokens: 2048,
+          max_tokens: 4096,
           system: CONVERSATION_SYSTEM_PROMPT,
           messages,
         });
@@ -295,7 +303,7 @@ export class AIService {
 
         const response = await this.client.messages.create({
           model: MODEL,
-          max_tokens: 4096,
+          max_tokens: 16384,
           system: APPLY_SYSTEM_PROMPT,
           messages,
         });

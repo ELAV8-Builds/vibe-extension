@@ -116,6 +116,7 @@ const SelectedElementSchema = z.object({
   classes: z.array(z.string()).optional(),
   styles: z.record(z.string(), z.string()).optional(),
   text: z.string().optional(),
+  innerHTML: z.string().max(50000).optional(),
   bounds: BoundsSchema.optional(),
   breadcrumb: z.string().optional(),
   selector: z.string().optional(),
@@ -128,6 +129,7 @@ export interface SelectedElement {
   classes?: string[];
   styles?: Record<string, string>;
   text?: string;
+  innerHTML?: string;
   bounds?: { x: number; y: number; w: number; h: number };
   breadcrumb?: string;
   selector?: string;
