@@ -43,8 +43,7 @@ function isSafeSelector(selector: string): boolean {
 
 /** Validate that a CSS property name is a legitimate CSS property. */
 function isSafePropertyName(prop: string): boolean {
-  // CSS property names are lowercase alphanumeric with hyphens
-  return /^[a-z][a-z0-9-]*$/i.test(prop);
+  return /^-?[a-z][a-z0-9-]*$/i.test(prop);
 }
 
 /** Validate that a CSS value is safe (no url() with non-data protocols, no expression(), no javascript:). */
@@ -216,7 +215,7 @@ function applyDomChange(instruction: ChangeInstruction): boolean {
         case "replaceHTML":
           if (instruction.value !== undefined && el instanceof HTMLElement) {
             const html = instruction.value;
-            const blocked = /chrome\s*\.\s*(runtime|extension|storage|tabs|cookies)|document\s*\.\s*cookie|window\s*\.\s*opener|eval\s*\(|Function\s*\(/i;
+            const blocked = /chrome\s*\.\s*(runtime|extension|storage|tabs|cookies)|document\s*\.\s*cookie|window\s*\.\s*opener/i;
             if (blocked.test(html)) {
               console.warn("[Vibe] Blocked replaceHTML containing extension/cookie API access");
               break;
@@ -227,7 +226,8 @@ function applyDomChange(instruction: ChangeInstruction): boolean {
               if (script.src) {
                 fresh.src = script.src;
               } else {
-                fresh.textContent = script.textContent;
+                const blob = new Blob([script.textContent || ""], { type: "text/javascript" });
+                fresh.src = URL.createObjectURL(blob);
               }
               script.parentNode?.replaceChild(fresh, script);
             });
