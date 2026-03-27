@@ -99,6 +99,8 @@ export interface SelectedElement {
   styles: Record<string, string>;
   text?: string;
   breadcrumb: string;
+  selector: string;
+  context?: DOMNode;
   bounds: { x: number; y: number; w: number; h: number };
 }
 

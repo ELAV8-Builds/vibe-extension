@@ -1,7 +1,7 @@
 /// Element selector overlay — hover to inspect, click to select.
 
 import { MessageType } from "../shared/messages";
-import type { SelectedElement } from "../shared/types";
+import type { SelectedElement, DOMNode } from "../shared/types";
 import {
   SELECTOR_OVERLAY_ID,
   SELECTOR_TOOLTIP_ID,
@@ -90,6 +90,126 @@ function getBreadcrumb(el: Element): string {
   return parts.join(" > ");
 }
 
+// ─── Unique CSS Selector Builder ───
+
+function getNthOfTypeIndex(el: Element): number {
+  const parent = el.parentElement;
+  if (!parent) return 1;
+  const tag = el.tagName;
+  let index = 0;
+  for (const child of Array.from(parent.children)) {
+    if (child.tagName === tag) index++;
+    if (child === el) return index;
+  }
+  return 1;
+}
+
+function buildUniqueSelector(el: Element): string {
+  const parts: string[] = [];
+  let current: Element | null = el;
+
+  while (current && current !== document.documentElement) {
+    if (current === document.body) {
+      parts.unshift("body");
+      break;
+    }
+
+    const tag = current.tagName.toLowerCase();
+
+    if (current.id && !current.id.startsWith("vibe-")) {
+      parts.unshift(`#${CSS.escape(current.id)}`);
+      break;
+    }
+
+    let segment = tag;
+    const classes = Array.from(current.classList)
+      .filter((c) => !c.startsWith("js-") && !c.startsWith("vibe-"))
+      .slice(0, 3);
+    if (classes.length > 0) {
+      segment += classes.map((c) => `.${CSS.escape(c)}`).join("");
+    }
+
+    const nthIndex = getNthOfTypeIndex(current);
+    const parent = current.parentElement;
+    if (parent) {
+      const sameTagSiblings = Array.from(parent.children).filter(
+        (c) => c.tagName === current!.tagName
+      );
+      if (sameTagSiblings.length > 1) {
+        segment += `:nth-of-type(${nthIndex})`;
+      }
+    }
+
+    parts.unshift(segment);
+    current = current.parentElement;
+  }
+
+  const selector = parts.join(" > ");
+
+  try {
+    const matches = document.querySelectorAll(selector);
+    if (matches.length === 1) return selector;
+  } catch {
+    // fall through
+  }
+
+  return selector;
+}
+
+// ─── Local Context Extractor ───
+
+const CONTEXT_STYLE_PROPS = [
+  "color", "background-color", "font-family", "font-size",
+  "font-weight", "padding", "margin", "display", "border-radius",
+  "width", "height", "flex-direction", "gap",
+] as const;
+
+function extractNodeShallow(el: Element): DOMNode {
+  const tag = el.tagName.toLowerCase();
+  const node: DOMNode = { tag };
+
+  if (el.id) node.id = el.id;
+  const classes = Array.from(el.classList)
+    .filter((c) => !c.startsWith("js-") && !c.startsWith("vibe-"))
+    .slice(0, 5);
+  if (classes.length > 0) node.classes = classes;
+
+  const computed = window.getComputedStyle(el);
+  const styles: Record<string, string> = {};
+  for (const prop of CONTEXT_STYLE_PROPS) {
+    const val = computed.getPropertyValue(prop);
+    if (val) styles[prop] = val;
+  }
+  if (Object.keys(styles).length > 0) node.styles = styles;
+
+  const directText = Array.from(el.childNodes)
+    .filter((n) => n.nodeType === Node.TEXT_NODE)
+    .map((n) => n.textContent?.trim() || "")
+    .join(" ")
+    .trim();
+  if (directText) {
+    node.text = directText.length > 60 ? directText.slice(0, 60) + "..." : directText;
+  }
+
+  return node;
+}
+
+function getLocalContext(el: Element): DOMNode | undefined {
+  const parent = el.parentElement;
+  if (!parent || parent === document.documentElement) return undefined;
+
+  const parentNode = extractNodeShallow(parent);
+  const children: DOMNode[] = [];
+
+  for (const child of Array.from(parent.children).slice(0, 10)) {
+    if (child.getAttribute("data-vibe") === "true") continue;
+    children.push(extractNodeShallow(child));
+  }
+
+  if (children.length > 0) parentNode.children = children;
+  return parentNode;
+}
+
 // ─── Element Info ───
 
 function getElementInfo(el: Element): SelectedElement {
@@ -127,6 +247,8 @@ function getElementInfo(el: Element): SelectedElement {
         : textContent
       : undefined,
     breadcrumb: getBreadcrumb(el),
+    selector: buildUniqueSelector(el),
+    context: getLocalContext(el),
     bounds: {
       x: Math.round(rect.x),
       y: Math.round(rect.y),

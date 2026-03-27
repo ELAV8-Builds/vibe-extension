@@ -1,12 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Config } from "../config";
-import type { DOMSnapshot, DOMNode, ConversationMessage } from "../types/api";
+import type { DOMSnapshot, ConversationMessage, SelectedElement } from "../types/api";
 import type { AIDesignResponse } from "../types/changes";
 import { simplifySnapshot } from "./dom-processor";
 import { parseAIResponse, AIParseError } from "./change-generator";
 
 const MAX_RETRIES = 2;
-const MODEL = "claude-opus-4-6-20250219";
+const MODEL = "claude-sonnet-4-20250514";
 
 const SYSTEM_PROMPT = `You are a world-class web designer working directly on a live website. You receive a simplified DOM snapshot and the user's design requests. You MUST return valid JSON.
 
@@ -34,7 +34,8 @@ RULES:
 10. Respect the existing design language unless specifically asked to change it.
 11. For layout changes, consider responsive behavior.
 12. Never remove content — only restyle or restructure.
-13. If you cannot fulfill the request given the DOM context, explain why in "description" and return an empty changes array.`;
+13. If you cannot fulfill the request given the DOM context, explain why in "description" and return an empty changes array.
+14. When a SELECTED ELEMENT is provided with a CSS selector, use that exact selector for your CSS changes targeting that element. The selector has been verified to uniquely match the element on the page.`;
 
 /**
  * Build the contextual user prompt with DOM snapshot and conversation history.
@@ -42,7 +43,7 @@ RULES:
 function buildUserPrompt(
   message: string,
   domSnapshot: DOMSnapshot,
-  selectedElement?: DOMNode,
+  selectedElement?: SelectedElement,
   conversationHistory?: ConversationMessage[]
 ): string {
   const simplified = simplifySnapshot(domSnapshot);
@@ -67,11 +68,33 @@ function buildUserPrompt(
   prompt += JSON.stringify(simplified.tree, null, 2);
   prompt += `\n\n`;
 
-  // Selected element context
+  // Selected element context (enriched with unique selector and local DOM neighborhood)
   if (selectedElement) {
     prompt += `SELECTED ELEMENT (user has clicked on this element for focused changes):\n`;
-    prompt += JSON.stringify(selectedElement, null, 2);
-    prompt += `\n\n`;
+    if (selectedElement.selector) {
+      prompt += `- CSS Selector (use this exactly): ${selectedElement.selector}\n`;
+    }
+    if (selectedElement.breadcrumb) {
+      prompt += `- Breadcrumb: ${selectedElement.breadcrumb}\n`;
+    }
+    prompt += `- Tag: ${selectedElement.tag}`;
+    if (selectedElement.id) prompt += `, ID: ${selectedElement.id}`;
+    if (selectedElement.classes && selectedElement.classes.length > 0) {
+      prompt += `, Classes: [${selectedElement.classes.join(", ")}]`;
+    }
+    prompt += `\n`;
+    if (selectedElement.text) {
+      prompt += `- Text: "${selectedElement.text}"\n`;
+    }
+    if (selectedElement.styles && Object.keys(selectedElement.styles).length > 0) {
+      prompt += `- Current Styles: ${JSON.stringify(selectedElement.styles)}\n`;
+    }
+    if (selectedElement.context) {
+      prompt += `- Local Context (parent + siblings):\n`;
+      prompt += JSON.stringify(selectedElement.context, null, 2);
+      prompt += `\n`;
+    }
+    prompt += `\n`;
   }
 
   // Conversation history (last 10 messages)
@@ -106,7 +129,7 @@ export class AIService {
   async getDesignChanges(
     message: string,
     domSnapshot: DOMSnapshot,
-    selectedElement?: DOMNode,
+    selectedElement?: SelectedElement,
     conversationHistory?: ConversationMessage[]
   ): Promise<AIDesignResponse> {
     const userPrompt = buildUserPrompt(

@@ -217,14 +217,99 @@ function applyDomChange(instruction: ChangeInstruction): boolean {
   }
 }
 
+// ─── Verification + Inline Fallback ───
+
+interface InlineFallback {
+  element: HTMLElement;
+  property: string;
+  previousValue: string;
+}
+
+let inlineFallbacks: InlineFallback[] = [];
+
+function normalizeColorValue(val: string): string {
+  const trimmed = val.trim().toLowerCase().replace(/\s+/g, "");
+  return trimmed.replace(/!important$/, "").trim();
+}
+
+function verifyCssChange(
+  selector: string,
+  properties: Record<string, string>
+): { verified: boolean; failedProps: string[]; matchCount: number } {
+  const elements = document.querySelectorAll(selector);
+  if (elements.length === 0) {
+    return { verified: false, failedProps: Object.keys(properties), matchCount: 0 };
+  }
+
+  const failedProps: string[] = [];
+
+  for (const [prop, intendedValue] of Object.entries(properties)) {
+    const rawValue = intendedValue.replace(/\s*!important\s*$/, "").trim();
+    let anyElementMatched = false;
+
+    elements.forEach((el) => {
+      const computed = window.getComputedStyle(el);
+      const actual = computed.getPropertyValue(prop).trim();
+      if (normalizeColorValue(actual) === normalizeColorValue(rawValue)) {
+        anyElementMatched = true;
+      }
+    });
+
+    if (!anyElementMatched) {
+      failedProps.push(prop);
+    }
+  }
+
+  return {
+    verified: failedProps.length === 0,
+    failedProps,
+    matchCount: elements.length,
+  };
+}
+
+function applyInlineFallback(
+  selector: string,
+  failedProps: string[],
+  properties: Record<string, string>
+): number {
+  const elements = document.querySelectorAll(selector);
+  let applied = 0;
+
+  elements.forEach((el) => {
+    if (!(el instanceof HTMLElement)) return;
+    for (const prop of failedProps) {
+      const value = properties[prop];
+      if (!value) continue;
+      const rawValue = value.replace(/\s*!important\s*$/, "").trim();
+
+      const previousValue = el.style.getPropertyValue(prop);
+      inlineFallbacks.push({ element: el, property: prop, previousValue });
+
+      el.style.setProperty(prop, rawValue, "important");
+      applied++;
+    }
+  });
+
+  return applied;
+}
+
 // ─── Public API ───
+
+export interface ChangeFailure {
+  selector: string;
+  reason: string;
+}
 
 export function applyChanges(changes: ChangeInstruction[]): {
   appliedCount: number;
+  failedCount: number;
   errors: string[];
+  failures: ChangeFailure[];
 } {
   const errors: string[] = [];
+  const failures: ChangeFailure[] = [];
   let appliedCount = 0;
+  let failedCount = 0;
 
   for (const change of changes) {
     if (change.type === "css") {
@@ -238,9 +323,10 @@ export function applyChanges(changes: ChangeInstruction[]): {
         });
         appliedCount++;
       } else {
-        errors.push(
-          `Failed to apply CSS change for selector: ${change.selector || "unknown"}`
-        );
+        const sel = change.selector || "unknown";
+        errors.push(`Failed to apply CSS change for selector: ${sel}`);
+        failures.push({ selector: sel, reason: "invalid selector or no properties" });
+        failedCount++;
       }
     } else if (change.type === "dom") {
       const success = applyDomChange(change);
@@ -253,15 +339,52 @@ export function applyChanges(changes: ChangeInstruction[]): {
         });
         appliedCount++;
       } else {
-        errors.push(
-          `Failed to apply DOM change: ${change.action || "unknown"} on ${change.selector || "unknown"}`
-        );
+        const sel = change.selector || "unknown";
+        errors.push(`Failed to apply DOM change: ${change.action || "unknown"} on ${sel}`);
+        failures.push({ selector: sel, reason: `DOM ${change.action || "unknown"} failed` });
+        failedCount++;
       }
     }
   }
 
   rebuildStyleTag();
-  return { appliedCount, errors };
+
+  // Verify CSS changes and apply inline fallback for overridden properties
+  for (const change of changes) {
+    if (change.type !== "css" || !change.selector || !change.properties) continue;
+
+    const verification = verifyCssChange(change.selector, change.properties);
+
+    if (verification.matchCount === 0) {
+      failures.push({
+        selector: change.selector,
+        reason: `selector matched 0 elements`,
+      });
+      failedCount++;
+      continue;
+    }
+
+    if (!verification.verified) {
+      const inlineApplied = applyInlineFallback(
+        change.selector,
+        verification.failedProps,
+        change.properties
+      );
+      if (inlineApplied > 0) {
+        console.log(
+          `[Vibe] Inline fallback applied for ${verification.failedProps.length} overridden properties on "${change.selector}"`
+        );
+      } else {
+        failures.push({
+          selector: change.selector,
+          reason: `properties overridden: ${verification.failedProps.join(", ")}`,
+        });
+        failedCount++;
+      }
+    }
+  }
+
+  return { appliedCount, failedCount, errors, failures };
 }
 
 export function undoLast(): void {
@@ -277,6 +400,19 @@ export function undoAll(): void {
   if (tag) {
     tag.textContent = "";
   }
+
+  for (const fb of inlineFallbacks) {
+    try {
+      if (fb.previousValue) {
+        fb.element.style.setProperty(fb.property, fb.previousValue);
+      } else {
+        fb.element.style.removeProperty(fb.property);
+      }
+    } catch {
+      // Element may no longer exist in the DOM
+    }
+  }
+  inlineFallbacks = [];
 }
 
 export function getAppliedChanges(): AppliedChange[] {

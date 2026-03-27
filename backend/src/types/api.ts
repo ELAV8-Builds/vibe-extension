@@ -108,13 +108,39 @@ export interface ConversationMessage {
   content: string;
 }
 
+// ── Selected element schema (enriched with unique selector + local context) ──
+
+const SelectedElementSchema = z.object({
+  tag: z.string(),
+  id: z.string().optional(),
+  classes: z.array(z.string()).optional(),
+  styles: z.record(z.string(), z.string()).optional(),
+  text: z.string().optional(),
+  bounds: BoundsSchema.optional(),
+  breadcrumb: z.string().optional(),
+  selector: z.string().optional(),
+  context: DOMNodeSchema.optional(),
+});
+
+export interface SelectedElement {
+  tag: string;
+  id?: string;
+  classes?: string[];
+  styles?: Record<string, string>;
+  text?: string;
+  bounds?: { x: number; y: number; w: number; h: number };
+  breadcrumb?: string;
+  selector?: string;
+  context?: DOMNode;
+}
+
 // ── Request schemas ──
 
 export const ChatRequestSchema = z.object({
   sessionId: z.string().uuid().optional(),
   message: z.string().min(1).max(10000),
   domSnapshot: DOMSnapshotSchema,
-  selectedElement: DOMNodeSchema.optional(),
+  selectedElement: SelectedElementSchema.optional(),
   conversationHistory: z
     .array(
       z.object({

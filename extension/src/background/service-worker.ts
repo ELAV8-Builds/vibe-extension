@@ -56,15 +56,15 @@ async function sendToContentScript(
   tabId: number,
   message: Record<string, unknown>
 ): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tabId, message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      } else {
-        resolve(response);
-      }
+  try {
+    return await chrome.tabs.sendMessage(tabId, message);
+  } catch {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["src/content/index.ts"],
     });
-  });
+    return await chrome.tabs.sendMessage(tabId, message);
+  }
 }
 
 // ─── Helper: Send to Side Panel ───
@@ -100,8 +100,8 @@ async function sendToBackend(
     throw new Error(`Backend error (${response.status}): ${errorText}`);
   }
 
-  const data = (await response.json()) as AIDesignResponse;
-  return data;
+  const data = (await response.json()) as { sessionId: string; messageId: string; response: AIDesignResponse };
+  return data.response;
 }
 
 // ─── Screenshot Capture ───
@@ -169,12 +169,18 @@ async function handleMessage(
           selectedElement
         );
 
-        // Apply changes to the page
+        // Apply changes to the page and capture verification results
+        let applyResult: {
+          appliedCount?: number;
+          failedCount?: number;
+          failures?: Array<{ selector: string; reason: string }>;
+        } = {};
+
         if (aiResponse.changes && aiResponse.changes.length > 0) {
-          await sendToContentScript(tabId, {
+          applyResult = (await sendToContentScript(tabId, {
             type: MessageType.APPLY_CHANGES,
             changes: aiResponse.changes,
-          });
+          })) as typeof applyResult;
 
           // Shimmer changed elements
           const selectors = aiResponse.changes
@@ -193,10 +199,25 @@ async function handleMessage(
           type: MessageType.HIDE_PROGRESS,
         }).catch(() => {});
 
+        // Append failure note to description if some changes didn't apply
+        let enrichedResponse = aiResponse;
+        const failures = applyResult.failures || [];
+        if (failures.length > 0) {
+          const failureNote = failures
+            .map((f) => `"${f.selector}": ${f.reason}`)
+            .join("; ");
+          enrichedResponse = {
+            ...aiResponse,
+            description:
+              aiResponse.description +
+              `\n\n⚠ ${failures.length} change(s) could not be fully applied: ${failureNote}`,
+          };
+        }
+
         // Send response to side panel
         sendToSidePanel({
           type: MessageType.AI_RESPONSE,
-          response: aiResponse,
+          response: enrichedResponse,
           messageId: crypto.randomUUID(),
         });
 
