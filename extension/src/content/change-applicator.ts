@@ -406,6 +406,7 @@ export function applyChanges(changes: ChangeInstruction[]): {
   // Verify CSS changes and apply inline fallback for overridden properties
   for (const change of changes) {
     if (change.type !== "css" || !change.selector || !change.properties) continue;
+    if (change.selector.startsWith("@")) continue;
 
     const verification = verifyCssChange(change.selector, change.properties);
 
