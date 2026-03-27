@@ -39,27 +39,28 @@ export function createChatRoute(aiService: AIService): Hono {
       return c.json(err, 400);
     }
 
-    const { message, domSnapshot, selectedElement, conversationHistory } =
+    const { message, mode, domSnapshot, selectedElement, conversationHistory } =
       parsed.data;
     let { sessionId } = parsed.data;
 
     // Guard against excessively large DOM snapshots (500KB limit)
-    const snapshotJson = JSON.stringify(domSnapshot);
-    if (snapshotJson.length > 512 * 1024) {
-      const err: ErrorResponse = {
-        error: "DOM snapshot too large",
-        details: `Snapshot is ${Math.round(snapshotJson.length / 1024)}KB. Maximum is 512KB.`,
-      };
-      return c.json(err, 413);
+    if (domSnapshot) {
+      const snapshotJson = JSON.stringify(domSnapshot);
+      if (snapshotJson.length > 512 * 1024) {
+        const err: ErrorResponse = {
+          error: "DOM snapshot too large",
+          details: `Snapshot is ${Math.round(snapshotJson.length / 1024)}KB. Maximum is 512KB.`,
+        };
+        return c.json(err, 413);
+      }
     }
 
     try {
       const db = getDatabase();
       const now = new Date().toISOString();
 
-      // Extract url and title from the validated domSnapshot
-      const pageUrl = domSnapshot.url;
-      const pageTitle = domSnapshot.title || null;
+      const pageUrl = domSnapshot?.url || "unknown";
+      const pageTitle = domSnapshot?.title || null;
 
       // Create session if not provided or doesn't exist
       if (!sessionId) {
@@ -85,6 +86,7 @@ export function createChatRoute(aiService: AIService): Hono {
 
       // Store the user message
       const userMessageId = uuidv4();
+      const snapshotJson = domSnapshot ? JSON.stringify(domSnapshot) : null;
       db.prepare(
         `INSERT INTO messages (id, session_id, role, content, dom_snapshot, created_at)
          VALUES (?, ?, 'user', ?, ?, ?)`
@@ -105,6 +107,7 @@ export function createChatRoute(aiService: AIService): Hono {
       // Call AI service
       const aiResponse = await aiService.getDesignChanges(
         message,
+        mode,
         domSnapshot,
         selectedElement,
         conversationHistory

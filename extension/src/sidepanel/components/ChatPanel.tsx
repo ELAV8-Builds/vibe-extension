@@ -4,10 +4,9 @@ import { MessageBubble } from "./MessageBubble";
 import { MessageInput } from "./MessageInput";
 
 export function ChatPanel() {
-  const { messages, isLoading, sendMessage } = useChat();
+  const { messages, isLoading, hasConversation, sendMessage, applyDesign } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -29,7 +28,6 @@ export function ChatPanel() {
                 V
               </div>
               <div className="absolute inset-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 opacity-40 blur-xl animate-energy-pulse" />
-              {/* Orbiting dot */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-orbit" />
               </div>
@@ -38,9 +36,8 @@ export function ChatPanel() {
               Welcome to VIBE
             </p>
             <p className="text-vibe-muted text-xs leading-relaxed max-w-[240px]">
-              Describe how you want to redesign this page. I'll make it happen in real-time.
+              Tell me about the design you're envisioning. We'll discuss ideas, then make it happen.
             </p>
-            {/* Quick action chips */}
             <div className="flex flex-wrap gap-1.5 mt-4 justify-center">
               {["Dark mode", "Modern look", "Bigger fonts", "New colors"].map((hint) => (
                 <button
@@ -63,11 +60,9 @@ export function ChatPanel() {
           />
         ))}
 
-        {/* Futuristic building/thinking indicator */}
         {isLoading && (
           <div className="flex items-start gap-3 animate-fade-in">
             <div className="glass-card-glow rounded-xl px-4 py-3 flex items-center gap-3">
-              {/* Spinning orb */}
               <div className="loading-orb shrink-0">
                 <div className="absolute inset-[10px] rounded-full bg-vibe-accent/20" />
               </div>
@@ -91,6 +86,18 @@ export function ChatPanel() {
           </div>
         )}
       </div>
+
+      {/* Make it happen button */}
+      {hasConversation && !isLoading && (
+        <div className="px-3 pt-2 shrink-0">
+          <button
+            onClick={applyDesign}
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-500 via-purple-600 to-cyan-500 text-white text-sm font-semibold shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 animate-gradient"
+          >
+            Make it happen
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <MessageInput onSend={sendMessage} disabled={isLoading} />

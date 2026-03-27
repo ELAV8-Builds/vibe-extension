@@ -139,7 +139,8 @@ export interface SelectedElement {
 export const ChatRequestSchema = z.object({
   sessionId: z.string().uuid().optional(),
   message: z.string().min(1).max(10000),
-  domSnapshot: DOMSnapshotSchema,
+  mode: z.enum(["conversation", "apply"]).default("apply"),
+  domSnapshot: DOMSnapshotSchema.optional(),
   selectedElement: SelectedElementSchema.optional(),
   conversationHistory: z
     .array(

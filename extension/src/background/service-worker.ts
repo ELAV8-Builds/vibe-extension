@@ -77,22 +77,22 @@ function sendToSidePanel(message: Record<string, unknown>): void {
 
 // ─── Backend API Call ───
 
-async function sendToBackend(
-  message: string,
-  domSnapshot: DOMSnapshot,
-  selectedElement?: SelectedElement
-): Promise<AIDesignResponse> {
+interface BackendRequest {
+  message: string;
+  mode: "conversation" | "apply";
+  domSnapshot?: DOMSnapshot;
+  selectedElement?: SelectedElement;
+  conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>;
+}
+
+async function sendToBackend(req: BackendRequest): Promise<AIDesignResponse> {
   const response = await fetch(`${backendUrl}/api/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      message,
-      domSnapshot,
-      selectedElement,
-    }),
+    body: JSON.stringify(req),
   });
 
   if (!response.ok) {
@@ -145,31 +145,71 @@ async function handleMessage(
     // ─── Side Panel → Service Worker ───
 
     case MessageType.SEND_MESSAGE: {
+      // Conversation mode: no snapshot, no changes applied
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const selectedElement = message.selectedElement as SelectedElement | undefined;
+        const conversationHistory = message.conversationHistory as
+          Array<{ role: "user" | "assistant"; content: string }> | undefined;
+
+        const aiResponse = await sendToBackend({
+          message: message.message as string,
+          mode: "conversation",
+          domSnapshot: tab?.url ? {
+            url: tab.url,
+            title: tab.title || "",
+            viewport: { width: 0, height: 0 },
+            designTokens: { colors: [], fonts: [], spacing: [], radii: [] },
+            tree: { tag: "body" },
+            totalElements: 0,
+            extractedElements: 0,
+          } : undefined,
+          selectedElement,
+          conversationHistory,
+        });
+
+        sendToSidePanel({
+          type: MessageType.AI_RESPONSE,
+          response: aiResponse,
+          messageId: crypto.randomUUID(),
+        });
+
+        return { success: true };
+      } catch (err) {
+        sendToSidePanel({
+          type: MessageType.AI_ERROR,
+          error: (err as Error).message,
+        });
+        return { error: (err as Error).message };
+      }
+    }
+
+    case MessageType.APPLY_DESIGN: {
+      // Apply mode: full snapshot, generate and apply changes
       const tabId = await getActiveTabId();
       if (!tabId) throw new Error("No active tab found");
 
-      // Show progress bar
       await sendToContentScript(tabId, {
         type: MessageType.SHOW_PROGRESS,
       }).catch(() => {});
 
       try {
-        // Get DOM snapshot from content script
         const snapshotResult = (await sendToContentScript(tabId, {
           type: MessageType.REQUEST_DOM_SNAPSHOT,
         })) as { snapshot: DOMSnapshot };
 
-        // Send to backend
-        const selectedElement = message.selectedElement as
-          | SelectedElement
-          | undefined;
-        const aiResponse = await sendToBackend(
-          message.message as string,
-          snapshotResult.snapshot,
-          selectedElement
-        );
+        const selectedElement = message.selectedElement as SelectedElement | undefined;
+        const conversationHistory = message.conversationHistory as
+          Array<{ role: "user" | "assistant"; content: string }>;
 
-        // Apply changes to the page and capture verification results
+        const aiResponse = await sendToBackend({
+          message: "Apply the design changes discussed in the conversation.",
+          mode: "apply",
+          domSnapshot: snapshotResult.snapshot,
+          selectedElement,
+          conversationHistory,
+        });
+
         let applyResult: {
           appliedCount?: number;
           failedCount?: number;
@@ -182,7 +222,6 @@ async function handleMessage(
             changes: aiResponse.changes,
           })) as typeof applyResult;
 
-          // Shimmer changed elements
           const selectors = aiResponse.changes
             .filter((c) => c.type === "css" && c.selector)
             .map((c) => c.selector);
@@ -194,12 +233,10 @@ async function handleMessage(
           }
         }
 
-        // Hide progress bar
         await sendToContentScript(tabId, {
           type: MessageType.HIDE_PROGRESS,
         }).catch(() => {});
 
-        // Append failure note to description if some changes didn't apply
         let enrichedResponse = aiResponse;
         const failures = applyResult.failures || [];
         if (failures.length > 0) {
@@ -214,7 +251,6 @@ async function handleMessage(
           };
         }
 
-        // Send response to side panel
         sendToSidePanel({
           type: MessageType.AI_RESPONSE,
           response: enrichedResponse,
@@ -223,7 +259,6 @@ async function handleMessage(
 
         return { success: true };
       } catch (err) {
-        // Hide progress bar on error
         await sendToContentScript(tabId, {
           type: MessageType.HIDE_PROGRESS,
         }).catch(() => {});

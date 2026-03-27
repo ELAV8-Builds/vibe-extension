@@ -12,6 +12,7 @@ import type {
 export enum MessageType {
   // Side panel → Service worker
   SEND_MESSAGE = "SEND_MESSAGE",
+  APPLY_DESIGN = "APPLY_DESIGN",
   GET_DOM_SNAPSHOT = "GET_DOM_SNAPSHOT",
   TOGGLE_ELEMENT_SELECTOR = "TOGGLE_ELEMENT_SELECTOR",
   CAPTURE_SCREENSHOT = "CAPTURE_SCREENSHOT",
@@ -56,6 +57,12 @@ export enum MessageType {
 export interface SendMessagePayload {
   type: MessageType.SEND_MESSAGE;
   message: string;
+  selectedElement?: SelectedElement;
+}
+
+export interface ApplyDesignPayload {
+  type: MessageType.APPLY_DESIGN;
+  conversationHistory: Array<{ role: "user" | "assistant"; content: string }>;
   selectedElement?: SelectedElement;
 }
 
@@ -210,6 +217,7 @@ export interface HideComparisonPayload {
 
 export type ExtensionMessage =
   | SendMessagePayload
+  | ApplyDesignPayload
   | GetDomSnapshotPayload
   | ApplyChangesPayload
   | DomSnapshotResultPayload

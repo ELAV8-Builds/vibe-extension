@@ -3,6 +3,17 @@ import { useChatStore } from "../stores/chatStore";
 import { MessageType } from "../../shared/messages";
 import type { Message, AIDesignResponse, SelectedElement } from "../../shared/types";
 
+function buildConversationHistory(
+  messages: Message[]
+): Array<{ role: "user" | "assistant"; content: string }> {
+  return messages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    }));
+}
+
 export function useChat() {
   const {
     messages,
@@ -13,13 +24,12 @@ export function useChat() {
     setSelectedElement,
   } = useChatStore();
 
-  // Use ref for selectedElement to avoid re-subscribing the listener
-  // every time the selected element changes (prevents memory leak from
-  // repeated addEventListener/removeEventListener cycles).
   const selectedElementRef = useRef(selectedElement);
   selectedElementRef.current = selectedElement;
 
-  // Listen for messages from service worker
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
   useEffect(() => {
     if (typeof chrome === "undefined" || !chrome.runtime) return;
 
@@ -76,10 +86,12 @@ export function useChat() {
       setLoading(true);
 
       if (typeof chrome !== "undefined" && chrome.runtime) {
+        const history = buildConversationHistory(messagesRef.current);
         chrome.runtime.sendMessage({
           type: MessageType.SEND_MESSAGE,
           message: text.trim(),
           selectedElement: selectedElementRef.current || undefined,
+          conversationHistory: history,
         }).catch((err: Error) => {
           console.error("[Vibe] Failed to send message:", err);
           const errorMsg: Message = {
@@ -96,9 +108,40 @@ export function useChat() {
     [isLoading, addMessage, setLoading]
   );
 
+  const applyDesign = useCallback(() => {
+    if (isLoading) return;
+
+    const history = buildConversationHistory(messagesRef.current);
+    if (history.length === 0) return;
+
+    setLoading(true);
+
+    if (typeof chrome !== "undefined" && chrome.runtime) {
+      chrome.runtime.sendMessage({
+        type: MessageType.APPLY_DESIGN,
+        conversationHistory: history,
+        selectedElement: selectedElementRef.current || undefined,
+      }).catch((err: Error) => {
+        console.error("[Vibe] Failed to apply design:", err);
+        const errorMsg: Message = {
+          id: crypto.randomUUID(),
+          role: "system",
+          content: "Failed to apply design. Is the service worker running?",
+          timestamp: new Date().toISOString(),
+        };
+        addMessage(errorMsg);
+        setLoading(false);
+      });
+    }
+  }, [isLoading, addMessage, setLoading]);
+
+  const hasConversation = messages.some((m) => m.role === "assistant");
+
   return {
     messages,
     isLoading,
+    hasConversation,
     sendMessage,
+    applyDesign,
   };
 }
