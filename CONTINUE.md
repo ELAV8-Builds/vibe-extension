@@ -1,75 +1,85 @@
-# CONTINUE — Vibe Chrome Extension Build
+# CONTINUE — Vibe Chrome Extension Polish & Iterate
 
-*Created: 2026-03-26T21:00:00Z*
-*Updated: 2026-03-27T00:00:00Z*
-*Status: Build complete, needs iteration + deploy*
+*Created: 2026-03-27T02:38:00Z*
+*Status: Ready for iteration, Gemini assets, and preflight*
 
-## What Was Completed
+## What Was Completed (ALL previous work)
 
 1. **Brainstormed** the Vibe Chrome extension concept with Beau
 2. **Deep research** on competitive landscape — confirmed NO existing tool does AI chat + live DOM editing
 3. **Created full spec**: `/workspace/group/vibe-extension/SPEC_TRACKER.md` — 10 features, 5 phases
-4. **Built ALL 5 phases** — both backend and extension are complete and compile clean
+4. **Built ALL 5 phases** — both backend and extension compile clean
+5. **Futuristic design overhaul** — glassmorphism, neon glow, 15+ keyframe animations, dual-tone purple+cyan
+6. **MCP Integration** — All 3 phases built and merged to main:
+   - Phase 1: MCP Server with 8 tools + 4 resources
+   - Phase 2: Push notification system with SSE (IDE → extension real-time)
+   - Phase 3: Source mapping engine (CSS selectors → source file:line)
 
-### Build Status
-- **Backend**: 20 source files, Hono + SQLite + Anthropic SDK — `tsc --noEmit` PASSES
-- **Extension**: 33 source files, React + Zustand + Vite + @crxjs/vite-plugin — `tsc --noEmit` PASSES
-- **Total**: 55 source files, 5,324 lines of TypeScript
-- **npm install**: Both packages installed clean
+### GitHub
+- **Repo**: https://github.com/ELAV8-Builds/vibe-extension
+- **Main branch**: Fully up to date with all work
+- **Current branch**: `feature/polish-iterate` (for this round of work)
 
-### Files Built
+### File Counts
+- **Backend**: 26 source files, Hono + SQLite + Anthropic SDK + MCP SDK
+- **Extension**: 33 source files, React 18 + Zustand + Vite + @crxjs/vite-plugin
+- **Total**: 59 source files + configs, ~13K lines of TypeScript
 
-**Backend** (`/workspace/group/vibe-extension/backend/`):
-- package.json, tsconfig.json, .env.example
-- src/config.ts — env validation
-- src/db/schema.ts, src/db/index.ts — SQLite with WAL mode
-- src/types/api.ts, session.ts, changes.ts — full Zod-validated types
-- src/services/ai.ts — Claude Opus 4.6 with detailed system prompt
-- src/services/dom-processor.ts — 7-pass DOM simplification
-- src/services/change-generator.ts — AI response parser with retry
-- src/services/export.ts — CSS and JSON export generators
-- src/routes/health.ts, chat.ts, sessions.ts, snapshots.ts, export.ts
-- src/server.ts — Hono app with CORS + auth middleware
-- src/index.ts — entry point with graceful shutdown
+### Key Commits
+- `b4fddb7` — Initial build (62 files)
+- `e045fa2` — Futuristic design overhaul
+- `fff6d3e` — MCP integration (9 new files, 1,738 lines)
 
-**Extension** (`/workspace/group/vibe-extension/extension/`):
-- manifest.json — Manifest V3, permissions: activeTab, sidePanel, storage, scripting
-- vite.config.ts — @crxjs/vite-plugin + @tailwindcss/vite
-- src/shared/types.ts, messages.ts, constants.ts
-- src/sidepanel/ — React app with 8 components:
-  - App.tsx (4 tabs: Chat, Snapshots, Export, Settings)
-  - ChatPanel, MessageBubble, MessageInput, SnapshotTimeline
-  - ComparisonSlider, ExportPanel, ElementSelector, SettingsPanel
-- src/sidepanel/stores/chatStore.ts — Zustand
-- src/sidepanel/hooks/useChat.ts, useSnapshots.ts, useConnection.ts
-- src/content/ — 7 content scripts:
-  - dom-reader.ts (smart extraction, <10KB target)
-  - change-applicator.ts (CSS injection + DOM manipulation)
-  - element-selector.ts (click-to-select with hover overlay)
-  - animations.ts (progress bar + shimmer effects)
-  - snapshot.ts, comparison.ts
-- src/background/service-worker.ts — message routing
-- public/icons/ — 3 SVG icons (gradient V on dark square)
+## NEXT STEPS — Do These In Order
 
-## Remaining Steps
+### Step 1: Gemini Design Assets
+Beau wants Gemini-generated images for the extension. Use the `creative` tier on LiteLLM (`http://host.docker.internal:4000`) or the Gemini image generation API to create:
+- **Extension icon** — A futuristic "V" logo (16x16, 48x48, 128x128 PNGs). Currently using SVG placeholders in `extension/public/icons/`
+- **Splash/welcome graphic** — For the ChatPanel welcome screen (currently shows an animated CSS orb)
+- **Loading animation assets** — Any supplemental graphics for the building state
+- Save generated assets to `extension/public/icons/` and `extension/public/images/`
+- Update references in manifest.json and components as needed
 
-1. **Continue iteration** — two audit agents were launched to review backend and extension code; check if they completed and apply any remaining fixes
-2. **Run Vite build** for the extension: `cd extension && npm run build`
-3. **Push to GitHub** — create ELAV8-Builds/vibe-extension repo
-4. **Gemini design assets** — use creative tier or Gemini for icons/design polish (Beau requested this)
-5. **Deploy** — Beau wants a Vercel link if possible (note: backend needs a server, not Vercel-friendly; could do Vercel for a landing page/demo or use Railway for backend)
-6. **Send Beau the GitHub link**
+### Step 2: Iterate 3x (iterate skill — 3 cycles × 2 passes = 6 micro-iterations)
+Run the `iterate` skill on both backend and extension:
+- Focus areas: error handling, edge cases, empty states, loading states, accessibility
+- Check that every async action has visible feedback (Build Rule B3)
+- No mock data anywhere (Build Rule B4)
+- Verify env vars are actually wired and read (Build Rule B2)
 
-## Beau's Key Instructions
-- Use Gemini for image generation (design assets)
-- Iterate 3x through iteration process
-- Host on Vercel if possible
-- Check context window periodically and save/restart if needed
-- Follow full build pipeline
+### Step 3: Preflight Validation (preflight-app skill — full 10-step checklist)
+Run the `preflight-app` skill:
+- tsc --noEmit on both backend and extension
+- Vite build on extension: `cd extension && npm run build`
+- Check for console errors, unused imports, any TODO/FIXME items
+- Verify all routes return proper error responses
+- Check CORS config, auth middleware
+- Fix any failures and re-run until all pass
+
+### Step 4: Commit & Push
+- Commit all polish work to `feature/polish-iterate`
+- Push to GitHub
+- Send Beau the final update with what was improved
+
+## Beau's Instructions (This Round)
+- Do iterate + preflight + Gemini images
+- Do NOT deploy (skip deployment for now)
+- Working on `feature/polish-iterate` branch
+- Give Beau an update in 20 minutes from 02:36 UTC (by ~02:56 UTC)
 
 ## Key Technical Details
-- Extension: React 18 + TypeScript + Tailwind + Vite + @crxjs/vite-plugin
-- Backend: Hono + SQLite (better-sqlite3) + Anthropic SDK
+- Extension: React 18 + TypeScript + Tailwind CSS 4 + Vite 6 + @crxjs/vite-plugin 2 + @vitejs/plugin-react 4.3.4
+- Backend: Hono 4 + SQLite (better-sqlite3) + Anthropic SDK + MCP SDK
 - AI: Claude Opus 4.6 via backend proxy
 - Port: 5100 (backend)
-- State: Zustand
+- State: Zustand 5
+- tsconfig: module=node16, moduleResolution=node16, target=ES2022
+- All imports use `.js` extensions for node16 module resolution
+
+## Design System Reference
+- Background: #07070f (near-black)
+- Primary accent: #7c3aed (purple)
+- Secondary accent: #06b6d4 (cyan)
+- Glassmorphism: backdrop-filter blur(12px), bg white/5%
+- Animations: fadeIn, fadeInScale, slideIn, glowPulse, borderGlow, orbitDot, scanLine, etc.
+- Key CSS file: extension/src/sidepanel/styles/globals.css

@@ -1,14 +1,30 @@
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g128" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#a855f7"/>
+    <linearGradient id="vg128" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
+    <linearGradient id="bg128" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#07070f"/>
+    </linearGradient>
+    <filter id="glow128">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
+    <filter id="outerGlow128">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#7c3aed" flood-opacity="0.3"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="128" height="128" rx="28" fill="#1a1a3e"/>
-  <path d="M38 30L64 98L78 58L92 30" stroke="url(#g128)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)"/>
+  <rect width="128" height="128" rx="28" fill="url(#bg128)"/>
+  <rect x="2" y="2" width="124" height="124" rx="26" fill="none" stroke="url(#vg128)" stroke-width="1.5" opacity="0.3"/>
+  <path d="M34 28L58 100L64 84L70 100L94 28" stroke="url(#vg128)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#outerGlow128)"/>
+  <circle cx="64" cy="100" r="3" fill="#06b6d4" opacity="0.8"/>
 </svg>

@@ -1,10 +1,10 @@
 <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="g16" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#a855f7"/>
+    <linearGradient id="vg16" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
   </defs>
-  <rect width="16" height="16" rx="3" fill="#1a1a3e"/>
-  <path d="M4.5 3.5L8 11.5L9.5 7.5L11.5 3.5" stroke="url(#g16)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect width="16" height="16" rx="3" fill="#07070f"/>
+  <path d="M4.5 3L7.5 13L8 11L8.5 13L11.5 3" stroke="url(#vg16)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>
