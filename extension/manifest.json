@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Vibe — AI Design Tool",
+  "name": "HiBrow — Say it. See it. Ship it.",
   "description": "AI-powered live website redesign, directly in the browser.",
   "version": "0.1.0",
   "permissions": [
@@ -32,6 +32,6 @@
     "128": "public/icons/icon128.png"
   },
   "action": {
-    "default_title": "Vibe — AI Design Tool"
+    "default_title": "HiBrow — Say it. See it. Ship it."
   }
 }

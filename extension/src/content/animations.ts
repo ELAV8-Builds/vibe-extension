@@ -1,4 +1,4 @@
-/// Progress bar and shimmer animations injected into the page.
+/// Progress bar, shimmer, and matrix rain animations injected into the page.
 
 import {
   VIBE_ANIMATIONS_TAG_ID,
@@ -6,6 +6,15 @@ import {
   SHIMMER_DURATION_MS,
   SHIMMER_STAGGER_MS,
 } from "../shared/constants";
+
+const MATRIX_CONTAINER_ID = "hibrow-matrix-rain";
+const MATRIX_CHARS = [
+  "{", "}", "#", ";", ":", "px", "em", "//", "=>", "&&", "||",
+  "0", "1", "f()", "[]", "<>", "css", "rgb", "var", "rem", "..",
+  "+=", "!=", "->", "::", "%", "**", ">>", "<<",
+];
+const MATRIX_COLUMN_COUNT = 28;
+const MATRIX_DURATION_MS = 2200;
 
 // ─── Animation Style Tag ───
 
@@ -62,6 +71,48 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
       @keyframes vibe-fade-out {
         from { opacity: 1; }
         to { opacity: 0; }
+      }
+
+      @keyframes vibe-matrix-fall {
+        0% { transform: translateY(-20px); opacity: 0; }
+        8% { opacity: 1; }
+        75% { opacity: 0.6; }
+        100% { transform: translateY(calc(100vh + 20px)); opacity: 0; }
+      }
+
+      #${MATRIX_CONTAINER_ID} {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483646;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .hibrow-matrix-col {
+        position: absolute;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        animation: vibe-matrix-fall var(--fall-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--fall-delay) forwards;
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .hibrow-matrix-char {
+        font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+        font-size: var(--char-size, 11px);
+        line-height: 1;
+        color: #e8732a;
+        text-shadow: 0 0 6px rgba(232, 115, 42, 0.7), 0 0 14px rgba(232, 115, 42, 0.3);
+        white-space: nowrap;
+        opacity: var(--char-opacity, 0.7);
+      }
+
+      .hibrow-matrix-char.bright {
+        color: #f0944d;
+        text-shadow: 0 0 8px rgba(240, 148, 77, 0.9), 0 0 20px rgba(232, 115, 42, 0.5);
+        opacity: 1;
       }
 
       #${PROGRESS_BAR_ID} {
@@ -138,6 +189,10 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         .vibe-shimmer-effect::after {
           display: none;
         }
+        .hibrow-matrix-col {
+          animation: none;
+          display: none;
+        }
       }
     `;
     document.head.appendChild(tag);
@@ -196,7 +251,6 @@ export function hideProgress(): void {
 export function shimmerElements(selectors: string[]): void {
   getOrCreateAnimationStyle();
 
-  // Check if user prefers reduced motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
@@ -216,4 +270,78 @@ export function shimmerElements(selectors: string[]): void {
       }
     }, index * SHIMMER_STAGGER_MS);
   });
+}
+
+// ─── Matrix Rain ───
+
+let matrixTimer: ReturnType<typeof setTimeout> | null = null;
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function buildMatrixColumn(x: number): HTMLDivElement {
+  const col = document.createElement("div");
+  col.className = "hibrow-matrix-col";
+  col.style.left = `${x}%`;
+
+  const charCount = 4 + Math.floor(Math.random() * 6);
+  const fallDuration = 1200 + Math.random() * 1000;
+  const fallDelay = Math.random() * 800;
+  const charSize = 9 + Math.floor(Math.random() * 5);
+
+  col.style.setProperty("--fall-duration", `${fallDuration}ms`);
+  col.style.setProperty("--fall-delay", `${fallDelay}ms`);
+  col.style.setProperty("--char-size", `${charSize}px`);
+
+  for (let i = 0; i < charCount; i++) {
+    const span = document.createElement("span");
+    span.className = `hibrow-matrix-char${Math.random() > 0.7 ? " bright" : ""}`;
+    span.style.setProperty("--char-opacity", `${0.3 + Math.random() * 0.5}`);
+    span.textContent = pickRandom(MATRIX_CHARS);
+    col.appendChild(span);
+  }
+
+  return col;
+}
+
+export function showMatrixRain(): void {
+  getOrCreateAnimationStyle();
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  let container = document.getElementById(MATRIX_CONTAINER_ID);
+  if (container) container.remove();
+  if (matrixTimer) {
+    clearTimeout(matrixTimer);
+    matrixTimer = null;
+  }
+
+  container = document.createElement("div");
+  container.id = MATRIX_CONTAINER_ID;
+  container.setAttribute("data-vibe", "true");
+
+  for (let i = 0; i < MATRIX_COLUMN_COUNT; i++) {
+    const x = (i / MATRIX_COLUMN_COUNT) * 100 + Math.random() * (100 / MATRIX_COLUMN_COUNT);
+    container.appendChild(buildMatrixColumn(x));
+  }
+
+  document.body.appendChild(container);
+
+  matrixTimer = setTimeout(() => {
+    matrixTimer = null;
+    const el = document.getElementById(MATRIX_CONTAINER_ID);
+    if (el) el.remove();
+  }, MATRIX_DURATION_MS);
+}
+
+export function hideMatrixRain(): void {
+  if (matrixTimer) {
+    clearTimeout(matrixTimer);
+    matrixTimer = null;
+  }
+  const el = document.getElementById(MATRIX_CONTAINER_ID);
+  if (el) el.remove();
 }

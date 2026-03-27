@@ -299,6 +299,39 @@ body {
   animation: energyPulse 2s ease-in-out infinite;
 }
 
+/* ─── Animated Pen Nib (designing state) ─── */
+
+@keyframes penWrite {
+  0%, 100% { transform: rotate(-32deg) translateY(0); }
+  25% { transform: rotate(-28deg) translateY(1px) translateX(1px); }
+  50% { transform: rotate(-34deg) translateY(-1px); }
+  75% { transform: rotate(-30deg) translateY(0.5px) translateX(-0.5px); }
+}
+
+@keyframes inkDraw {
+  0% { stroke-dashoffset: 32; opacity: 0.3; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
+  55% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -32; opacity: 0; }
+}
+
+@keyframes inkGlow {
+  0%, 100% { filter: drop-shadow(0 0 3px var(--color-vibe-accent-glow)); }
+  50% { filter: drop-shadow(0 0 8px var(--color-vibe-accent)) drop-shadow(0 0 16px var(--color-vibe-accent-glow)); }
+}
+
+.designing-pen {
+  animation: penWrite 1.6s ease-in-out infinite;
+  transform-origin: 75% 25%;
+  filter: drop-shadow(0 0 4px var(--color-vibe-accent-glow));
+}
+
+.designing-pen-ink {
+  stroke-dasharray: 32;
+  stroke-dashoffset: 32;
+  animation: inkDraw 1.6s ease-in-out infinite, inkGlow 1.6s ease-in-out infinite;
+}
+
 /* ─── Tab Transition ─── */
 
 .tab-content {

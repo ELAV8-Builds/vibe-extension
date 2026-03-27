@@ -40,12 +40,33 @@ export function App() {
         {/* Ambient glow behind logo */}
         <div className="absolute -left-4 -top-4 w-20 h-20 bg-vibe-accent/10 rounded-full blur-2xl pointer-events-none" />
         <div className="flex items-center gap-2.5 relative z-10">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 via-amber-600 to-blue-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-orange-500/20 animate-gradient">
-            V
+          <div className="flex items-center gap-0">
+            <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-vibe-accent via-vibe-accent-hover to-vibe-accent bg-clip-text text-transparent animate-gradient">
+              H
+            </span>
+            {/* Pen nib as the "i" */}
+            <svg
+              className="inline-block -mx-[1px]"
+              width="8"
+              height="16"
+              viewBox="0 0 8 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="4" cy="2.2" r="1.4" fill="#f0944d" />
+              <path d="M4 5 L5.4 12.5 L4 14.5 L2.6 12.5 Z" fill="url(#logo-pen-grad)" />
+              <path d="M3.2 13.5 Q4 15.5 4.8 13.5" stroke="#e8732a" strokeWidth="0.8" fill="none" strokeLinecap="round" opacity="0.7" />
+              <defs>
+                <linearGradient id="logo-pen-grad" x1="4" y1="5" x2="4" y2="14.5" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#f0944d" />
+                  <stop offset="100%" stopColor="#e8732a" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-vibe-accent-hover via-vibe-accent to-vibe-accent-hover bg-clip-text text-transparent animate-gradient">
+              Brow
+            </span>
           </div>
-          <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-vibe-text to-vibe-accent-hover bg-clip-text text-transparent">
-            VIBE
-          </span>
           <div className="relative">
             <span
               className={`w-2 h-2 rounded-full block ${
