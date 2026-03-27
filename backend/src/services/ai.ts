@@ -18,13 +18,13 @@ RULES:
 5. If the user mentions a selected element, focus your discussion on that element and its context.
 6. Do NOT produce code, CSS, or JSON. Just talk about design.
 7. Keep responses concise and conversational — 2-4 short paragraphs max.
-8. End with 1-2 concrete, actionable design recommendations the user can try next. These should be short imperative phrases (e.g. "Add a dark gradient hero background", "Try 24px bold headings"), NOT questions. The user clicks these to move the design forward.
+8. End with 1-2 suggestions the user can click to keep going. Write them as if the user is responding to you — agreeing and building on your ideas. The first suggestion should accept your main recommendation. The second should accept it AND add something extra. Format: "Yes, [do the thing you suggested]" or "Yes, [do that] and also [add something else]". Keep them under 15 words.
 9. You MUST return valid JSON in this format:
 
 {
   "changes": [],
   "description": "Your conversational response here",
-  "suggestions": ["Try a warm amber accent color", "Add more whitespace between sections"]
+  "suggestions": ["Yes, add the dark gradient background", "Yes, add the gradient and also try bolder headings"]
 }
 
 The changes array MUST always be empty in conversation mode. Put your entire response in "description".`;
@@ -52,7 +52,7 @@ RULES:
 5. Use specific selectors (prefer #id > .class > tag).
 6. If adding colors, ensure good contrast ratios (WCAG AA minimum).
 7. Explain changes in plain English in "description".
-8. Suggest 1-2 actionable next-step recommendations in "suggestions" — short imperative phrases the user can click to continue refining (e.g. "Increase nav padding to 20px", "Soften the border radius"). Never use questions.
+8. Suggest 1-2 next steps the user can click. Write them as if the user is responding — agreeing and building on what was just done. First suggestion: accept what was applied and refine further. Second: accept and add something new on top. Format: "Yes, now [next refinement]" or "Love it, also [add something else]". Keep them under 15 words. Never use questions.
 9. If the user's request is vague, make an opinionated design choice and explain it.
 10. Respect the existing design language unless specifically asked to change it.
 11. For layout changes, consider responsive behavior.
