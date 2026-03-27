@@ -41,7 +41,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
   );
 
   return (
-    <div className="border-t border-vibe-border p-3 shrink-0">
+    <div className="border-t border-vibe-border p-3 shrink-0 glass-card">
       <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
@@ -51,12 +51,12 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           disabled={disabled}
           placeholder="Describe your design changes..."
           rows={1}
-          className="flex-1 bg-vibe-card text-vibe-text placeholder-vibe-muted rounded-lg px-3 py-2 text-sm resize-none outline-none border border-vibe-border focus:border-vibe-accent transition-colors duration-150 disabled:opacity-50"
+          className="flex-1 bg-vibe-bg/80 text-vibe-text placeholder-vibe-muted rounded-xl px-3.5 py-2.5 text-sm resize-none outline-none border border-vibe-border focus:border-vibe-accent focus:shadow-[0_0_12px_var(--color-vibe-accent-glow)] transition-all duration-200 disabled:opacity-50"
         />
         <button
           onClick={handleSend}
           disabled={disabled || !text.trim()}
-          className="shrink-0 w-8 h-8 rounded-lg bg-vibe-accent hover:bg-vibe-accent-hover disabled:opacity-30 disabled:hover:bg-vibe-accent flex items-center justify-center transition-colors duration-150"
+          className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 disabled:opacity-20 disabled:hover:from-violet-500 disabled:hover:to-purple-600 flex items-center justify-center transition-all duration-200 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-105 active:scale-95"
           title="Send message"
         >
           <svg
