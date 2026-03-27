@@ -8,6 +8,9 @@ import sessions from "./routes/sessions";
 import { createChatRoute } from "./routes/chat";
 import snapshots from "./routes/snapshots";
 import exportRoute from "./routes/export";
+import { createPushRoute } from "./routes/push";
+import { PushNotifier } from "./services/push-notifier";
+import sourceMapping from "./routes/source-mapping";
 
 /**
  * Create and configure the Hono application with all middleware and routes.
@@ -85,6 +88,14 @@ export function createApp(config: Config): Hono {
 
   // Export
   app.route("/", exportRoute);
+
+  // Source mappings (CSS selector → source code location)
+  app.route("/", sourceMapping);
+
+  // Push notifications (MCP client integration)
+  const pushNotifier = new PushNotifier();
+  const pushRoute = createPushRoute(pushNotifier);
+  app.route("/", pushRoute);
 
   // 404 fallback
   app.notFound((c) => {

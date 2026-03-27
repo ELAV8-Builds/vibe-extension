@@ -45,5 +45,29 @@ export function createSchema(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_snapshots_session
       ON snapshots(session_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS source_mappings (
+      id TEXT PRIMARY KEY,
+      selector TEXT NOT NULL,
+      component_name TEXT,
+      file_path TEXT NOT NULL,
+      line_number INTEGER,
+      column_number INTEGER,
+      confidence REAL NOT NULL DEFAULT 0.5,
+      source TEXT NOT NULL DEFAULT 'heuristic' CHECK (source IN ('sourcemap', 'heuristic', 'manual', 'ast')),
+      project_root TEXT,
+      framework TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_source_mappings_selector
+      ON source_mappings(selector);
+
+    CREATE INDEX IF NOT EXISTS idx_source_mappings_file
+      ON source_mappings(file_path);
+
+    CREATE INDEX IF NOT EXISTS idx_source_mappings_component
+      ON source_mappings(component_name);
   `);
 }
