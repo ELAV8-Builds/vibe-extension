@@ -19,6 +19,7 @@ export const DOMChangeSchema = z.object({
     "setText",
     "moveElement",
     "wrapElement",
+    "replaceHTML",
   ]),
   selector: z.string().min(1),
   attribute: z.string().optional(),

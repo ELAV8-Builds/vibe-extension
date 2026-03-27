@@ -24,12 +24,12 @@ export function ChatPanel() {
           <div className="flex flex-col items-center justify-center h-full text-center px-6 animate-fade-in">
             {/* Futuristic orb logo */}
             <div className="relative mb-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-cyan-500 flex items-center justify-center text-white text-2xl font-bold shadow-xl shadow-purple-500/30 animate-gradient">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 via-amber-600 to-blue-500 flex items-center justify-center text-white text-2xl font-bold shadow-xl shadow-orange-500/30 animate-gradient">
                 V
               </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 opacity-40 blur-xl animate-energy-pulse" />
+              <div className="absolute inset-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-blue-500 opacity-40 blur-xl animate-energy-pulse" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-orbit" />
+                <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(42,143,212,0.8)] animate-orbit" />
               </div>
             </div>
             <p className="text-vibe-text font-semibold text-sm mb-1 tracking-wide">
@@ -72,13 +72,13 @@ export function ChatPanel() {
                 </span>
                 <div className="flex gap-1">
                   <span className="w-8 h-1 rounded-full bg-vibe-accent/30 overflow-hidden">
-                    <span className="block w-full h-full bg-gradient-to-r from-purple-500 to-cyan-400 animate-gradient rounded-full" />
+                    <span className="block w-full h-full bg-gradient-to-r from-orange-500 to-blue-400 animate-gradient rounded-full" />
                   </span>
                   <span className="w-5 h-1 rounded-full bg-vibe-accent/20 overflow-hidden">
-                    <span className="block w-full h-full bg-gradient-to-r from-cyan-400 to-purple-500 animate-gradient rounded-full" style={{ animationDelay: "0.3s" }} />
+                    <span className="block w-full h-full bg-gradient-to-r from-blue-400 to-orange-500 animate-gradient rounded-full" style={{ animationDelay: "0.3s" }} />
                   </span>
                   <span className="w-3 h-1 rounded-full bg-vibe-accent/10 overflow-hidden">
-                    <span className="block w-full h-full bg-gradient-to-r from-purple-500 to-cyan-400 animate-gradient rounded-full" style={{ animationDelay: "0.6s" }} />
+                    <span className="block w-full h-full bg-gradient-to-r from-orange-500 to-blue-400 animate-gradient rounded-full" style={{ animationDelay: "0.6s" }} />
                   </span>
                 </div>
               </div>
@@ -92,7 +92,7 @@ export function ChatPanel() {
         <div className="px-3 pt-2 shrink-0">
           <button
             onClick={applyDesign}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-500 via-purple-600 to-cyan-500 text-white text-sm font-semibold shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 animate-gradient"
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-600 to-blue-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 animate-gradient"
           >
             Make it happen
           </button>

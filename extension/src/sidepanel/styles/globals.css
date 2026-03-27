@@ -3,24 +3,24 @@
 /* ─── Futuristic Theme ─── */
 
 @theme {
-  --color-vibe-bg: #07070f;
-  --color-vibe-bg-subtle: #0c0c1a;
-  --color-vibe-card: #111128;
-  --color-vibe-card-hover: #16163a;
-  --color-vibe-text: #e8e8ff;
-  --color-vibe-muted: #6e6e99;
-  --color-vibe-accent: #7c3aed;
-  --color-vibe-accent-hover: #a78bfa;
-  --color-vibe-accent-glow: rgba(124, 58, 237, 0.35);
-  --color-vibe-cyan: #06b6d4;
-  --color-vibe-cyan-glow: rgba(6, 182, 212, 0.25);
-  --color-vibe-user: #4c1d95;
+  --color-vibe-bg: #060a13;
+  --color-vibe-bg-subtle: #0a1220;
+  --color-vibe-card: #0f1a2e;
+  --color-vibe-card-hover: #152440;
+  --color-vibe-text: #e4e8f0;
+  --color-vibe-muted: #5a7090;
+  --color-vibe-accent: #e8732a;
+  --color-vibe-accent-hover: #f0944d;
+  --color-vibe-accent-glow: rgba(232, 115, 42, 0.35);
+  --color-vibe-cyan: #2a8fd4;
+  --color-vibe-cyan-glow: rgba(42, 143, 212, 0.25);
+  --color-vibe-user: #1a3a5c;
   --color-vibe-success: #10b981;
   --color-vibe-error: #f43f5e;
   --color-vibe-warning: #f59e0b;
-  --color-vibe-border: #1e1e44;
-  --color-vibe-border-glow: rgba(124, 58, 237, 0.15);
-  --color-vibe-glass: rgba(17, 17, 40, 0.8);
+  --color-vibe-border: #1a2a42;
+  --color-vibe-border-glow: rgba(232, 115, 42, 0.15);
+  --color-vibe-glass: rgba(10, 18, 32, 0.8);
 }
 
 /* ─── Base Styles ─── */

@@ -18,13 +18,13 @@ RULES:
 5. If the user mentions a selected element, focus your discussion on that element and its context.
 6. Do NOT produce code, CSS, or JSON. Just talk about design.
 7. Keep responses concise and conversational — 2-4 short paragraphs max.
-8. End with 1-2 specific follow-up questions or suggestions to keep the conversation going.
+8. End with 1-2 concrete, actionable design recommendations the user can try next. These should be short imperative phrases (e.g. "Add a dark gradient hero background", "Try 24px bold headings"), NOT questions. The user clicks these to move the design forward.
 9. You MUST return valid JSON in this format:
 
 {
   "changes": [],
   "description": "Your conversational response here",
-  "suggestions": ["Follow-up idea 1", "Follow-up idea 2"]
+  "suggestions": ["Try a warm amber accent color", "Add more whitespace between sections"]
 }
 
 The changes array MUST always be empty in conversation mode. Put your entire response in "description".`;
@@ -37,7 +37,7 @@ Your response format:
 {
   "changes": [
     { "type": "css", "selector": "...", "properties": { "property": "value" } },
-    { "type": "dom", "action": "addClass|removeClass|setAttribute|setText", "selector": "...", "attribute": "...", "value": "..." }
+    { "type": "dom", "action": "addClass|removeClass|setAttribute|setText|replaceHTML|moveElement|wrapElement", "selector": "...", "attribute": "...", "value": "..." }
   ],
   "description": "What you changed and why",
   "suggestions": ["Follow-up idea 1", "Follow-up idea 2"],
@@ -52,14 +52,19 @@ RULES:
 5. Use specific selectors (prefer #id > .class > tag).
 6. If adding colors, ensure good contrast ratios (WCAG AA minimum).
 7. Explain changes in plain English in "description".
-8. Suggest 1-2 natural follow-ups in "suggestions".
+8. Suggest 1-2 actionable next-step recommendations in "suggestions" — short imperative phrases the user can click to continue refining (e.g. "Increase nav padding to 20px", "Soften the border radius"). Never use questions.
 9. If the user's request is vague, make an opinionated design choice and explain it.
 10. Respect the existing design language unless specifically asked to change it.
 11. For layout changes, consider responsive behavior.
 12. Never remove content — only restyle or restructure.
 13. If you cannot fulfill the request given the DOM context, explain why in "description" and return an empty changes array.
 14. When a SELECTED ELEMENT is provided with a CSS selector, use that exact selector for your CSS changes targeting that element. The selector has been verified to uniquely match the element on the page.
-15. Synthesize ALL design decisions from the conversation into one cohesive set of changes.`;
+15. Synthesize ALL design decisions from the conversation into one cohesive set of changes.
+16. DOM action reference:
+    - setText: set "value" to the new text content.
+    - replaceHTML: set "value" to the new HTML string. Use this to rebuild sections with new markup. Keep HTML clean and semantic.
+    - moveElement: set "value" to the CSS selector of the destination parent to append the element into.
+    - wrapElement: set "value" to the wrapper tag name (div, section, etc.) and optionally "attribute" to the wrapper's class name.`;
 
 function buildConversationPrompt(
   message: string,

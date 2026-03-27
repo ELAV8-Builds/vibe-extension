@@ -43,7 +43,8 @@ export interface ChangeInstruction {
     | "removeClass"
     | "setText"
     | "moveElement"
-    | "wrapElement";
+    | "wrapElement"
+    | "replaceHTML";
   attribute?: string;
   value?: string;
 }

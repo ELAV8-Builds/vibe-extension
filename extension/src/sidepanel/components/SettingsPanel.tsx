@@ -88,13 +88,13 @@ export function SettingsPanel() {
           </span>
           <button
             onClick={() => setLocalDark(!localDark)}
-            className={`w-10 h-5 rounded-full transition-colors duration-200 relative ${
+            className={`w-9 h-5 rounded-full transition-colors duration-200 relative shrink-0 ${
               localDark ? "bg-vibe-accent" : "bg-vibe-border"
             }`}
           >
             <span
-              className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                localDark ? "translate-x-5" : "translate-x-0.5"
+              className={`absolute top-[3px] left-[3px] w-3.5 h-3.5 bg-white rounded-full transition-transform duration-200 shadow-sm ${
+                localDark ? "translate-x-[14px]" : "translate-x-0"
               }`}
             />
           </button>
@@ -107,13 +107,13 @@ export function SettingsPanel() {
           </span>
           <button
             onClick={() => setLocalAutoSnap(!localAutoSnap)}
-            className={`w-10 h-5 rounded-full transition-colors duration-200 relative ${
+            className={`w-9 h-5 rounded-full transition-colors duration-200 relative shrink-0 ${
               localAutoSnap ? "bg-vibe-accent" : "bg-vibe-border"
             }`}
           >
             <span
-              className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                localAutoSnap ? "translate-x-5" : "translate-x-0.5"
+              className={`absolute top-[3px] left-[3px] w-3.5 h-3.5 bg-white rounded-full transition-transform duration-200 shadow-sm ${
+                localAutoSnap ? "translate-x-[14px]" : "translate-x-0"
               }`}
             />
           </button>

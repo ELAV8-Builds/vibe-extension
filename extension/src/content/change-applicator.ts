@@ -2,6 +2,7 @@
 
 import type { ChangeInstruction, AppliedChange } from "../shared/types";
 import { VIBE_STYLE_TAG_ID } from "../shared/constants";
+import DOMPurify from "dompurify";
 
 // ─── State ───
 
@@ -204,6 +205,61 @@ function applyDomChange(instruction: ChangeInstruction): boolean {
             el.textContent = instruction.value;
           }
           break;
+
+        case "replaceHTML":
+          if (instruction.value !== undefined && el instanceof HTMLElement) {
+            const clean = DOMPurify.sanitize(instruction.value, {
+              ALLOWED_TAGS: [
+                "div", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6",
+                "a", "img", "ul", "ol", "li", "br", "hr", "strong", "em",
+                "b", "i", "u", "s", "small", "mark", "sub", "sup",
+                "blockquote", "pre", "code", "table", "thead", "tbody",
+                "tr", "th", "td", "section", "article", "header", "footer",
+                "nav", "main", "aside", "figure", "figcaption", "details",
+                "summary", "button", "label", "input", "select", "option",
+                "textarea", "form", "fieldset", "legend", "video", "audio",
+                "source", "picture", "svg", "path", "circle", "rect",
+                "line", "polyline", "polygon", "g", "defs", "use",
+              ],
+              ALLOWED_ATTR: [
+                "class", "id", "href", "src", "alt", "title", "style",
+                "width", "height", "target", "rel", "type", "placeholder",
+                "value", "name", "for", "role", "aria-label", "aria-hidden",
+                "data-*", "viewBox", "fill", "stroke", "stroke-width", "d",
+                "cx", "cy", "r", "x", "y", "x1", "y1", "x2", "y2",
+                "points", "transform",
+              ],
+              FORBID_TAGS: ["script", "iframe", "object", "embed", "link"],
+              FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+            });
+            el.innerHTML = clean;
+          }
+          break;
+
+        case "moveElement": {
+          if (!instruction.value || !(el instanceof HTMLElement)) break;
+          const targetSelector = instruction.value;
+          if (!isSafeSelector(targetSelector)) break;
+          const target = document.querySelector(targetSelector);
+          if (target && target !== el && !target.contains(el)) {
+            target.appendChild(el);
+          }
+          break;
+        }
+
+        case "wrapElement": {
+          if (!instruction.value || !(el instanceof HTMLElement)) break;
+          const wrapperTag = instruction.value.replace(/<[^>]*>/g, "").trim() || "div";
+          const safeTags = ["div", "span", "section", "article", "main", "aside", "header", "footer", "nav", "figure"];
+          if (!safeTags.includes(wrapperTag.toLowerCase())) break;
+          const wrapper = document.createElement(wrapperTag);
+          if (instruction.attribute) {
+            wrapper.className = instruction.attribute;
+          }
+          el.parentNode?.insertBefore(wrapper, el);
+          wrapper.appendChild(el);
+          break;
+        }
 
         default:
           break;

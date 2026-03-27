@@ -23,7 +23,7 @@ export function MessageBubble({ message, onSuggestionClick }: MessageBubbleProps
   if (isUser) {
     return (
       <div className="flex justify-end animate-slide-in-right">
-        <div className="bg-gradient-to-br from-violet-600 to-purple-700 text-white rounded-2xl rounded-br-sm px-3.5 py-2.5 text-sm max-w-[85%] shadow-lg shadow-purple-500/10">
+        <div className="bg-gradient-to-br from-orange-600 to-amber-700 text-white rounded-2xl rounded-br-sm px-3.5 py-2.5 text-sm max-w-[85%] shadow-lg shadow-orange-500/10">
           {message.content}
         </div>
       </div>
@@ -42,7 +42,7 @@ export function MessageBubble({ message, onSuggestionClick }: MessageBubbleProps
         {/* Change count badge */}
         {changeCount > 0 && (
           <div className="flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-vibe-accent/20 to-cyan-500/10 text-vibe-accent text-xs font-medium px-2.5 py-0.5 rounded-full border border-vibe-accent/20">
+            <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-vibe-accent/20 to-blue-500/10 text-vibe-accent text-xs font-medium px-2.5 py-0.5 rounded-full border border-vibe-accent/20">
               <span className="w-1.5 h-1.5 rounded-full bg-vibe-success animate-pulse-dot" />
               {changeCount} change{changeCount !== 1 ? "s" : ""} applied
             </span>
@@ -59,7 +59,7 @@ export function MessageBubble({ message, onSuggestionClick }: MessageBubbleProps
               >
                 {change.type === "css" && change.selector && (
                   <span>
-                    <span className="text-cyan-400">{change.selector}</span>{" "}
+                    <span className="text-blue-400">{change.selector}</span>{" "}
                     <span className="text-vibe-accent-hover">
                       {Object.keys(change.properties || {}).join(", ")}
                     </span>
@@ -67,7 +67,7 @@ export function MessageBubble({ message, onSuggestionClick }: MessageBubbleProps
                 )}
                 {change.type === "dom" && change.action && (
                   <span>
-                    <span className="text-cyan-400">{change.action}</span>
+                    <span className="text-blue-400">{change.action}</span>
                     {change.value ? <span className="text-vibe-muted">: {change.value}</span> : ""}
                   </span>
                 )}

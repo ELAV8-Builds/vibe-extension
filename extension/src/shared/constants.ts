@@ -38,15 +38,15 @@ export const STORAGE_KEY_SESSION = "vibe-current-session";
 
 // ─── Colors ───
 export const COLORS = {
-  bg: "#0f0f23",
-  cardBg: "#1a1a3e",
-  text: "#e0e0ff",
-  textMuted: "#8888aa",
-  accent: "#6366f1",
-  accentHover: "#818cf8",
-  userBubble: "#3730a3",
+  bg: "#060a13",
+  cardBg: "#0f1a2e",
+  text: "#e4e8f0",
+  textMuted: "#5a7090",
+  accent: "#e8732a",
+  accentHover: "#f0944d",
+  userBubble: "#1a3a5c",
   success: "#22c55e",
   error: "#ef4444",
   warning: "#f59e0b",
-  border: "#2a2a5e",
+  border: "#1a2a42",
 } as const;

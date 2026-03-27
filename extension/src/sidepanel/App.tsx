@@ -40,7 +40,7 @@ export function App() {
         {/* Ambient glow behind logo */}
         <div className="absolute -left-4 -top-4 w-20 h-20 bg-vibe-accent/10 rounded-full blur-2xl pointer-events-none" />
         <div className="flex items-center gap-2.5 relative z-10">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 via-purple-600 to-cyan-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-purple-500/20 animate-gradient">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 via-amber-600 to-blue-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-orange-500/20 animate-gradient">
             V
           </div>
           <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-vibe-text to-vibe-accent-hover bg-clip-text text-transparent">

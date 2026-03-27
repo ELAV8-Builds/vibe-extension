@@ -52,6 +52,11 @@ async function getActiveTabId(): Promise<number | undefined> {
 
 // ─── Helper: Send to Content Script ───
 
+function getContentScriptFiles(): string[] {
+  const manifest = chrome.runtime.getManifest();
+  return manifest.content_scripts?.[0]?.js ?? [];
+}
+
 async function sendToContentScript(
   tabId: number,
   message: Record<string, unknown>
@@ -61,7 +66,7 @@ async function sendToContentScript(
   } catch {
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: ["src/content/index.ts"],
+      files: getContentScriptFiles(),
     });
     return await chrome.tabs.sendMessage(tabId, message);
   }
@@ -145,17 +150,27 @@ async function handleMessage(
     // ─── Side Panel → Service Worker ───
 
     case MessageType.SEND_MESSAGE: {
-      // Conversation mode: no snapshot, no changes applied
+      // Conversation mode: send real snapshot so the AI can see the page
       try {
+        const tabId = await getActiveTabId();
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         const selectedElement = message.selectedElement as SelectedElement | undefined;
         const conversationHistory = message.conversationHistory as
           Array<{ role: "user" | "assistant"; content: string }> | undefined;
 
-        const aiResponse = await sendToBackend({
-          message: message.message as string,
-          mode: "conversation",
-          domSnapshot: tab?.url ? {
+        let domSnapshot: DOMSnapshot | undefined;
+        if (tabId) {
+          try {
+            const result = (await sendToContentScript(tabId, {
+              type: MessageType.REQUEST_DOM_SNAPSHOT,
+            })) as { snapshot: DOMSnapshot } | undefined;
+            domSnapshot = result?.snapshot;
+          } catch {
+            // Content script may not be injected yet; fall back to minimal context
+          }
+        }
+        if (!domSnapshot && tab?.url) {
+          domSnapshot = {
             url: tab.url,
             title: tab.title || "",
             viewport: { width: 0, height: 0 },
@@ -163,7 +178,13 @@ async function handleMessage(
             tree: { tag: "body" },
             totalElements: 0,
             extractedElements: 0,
-          } : undefined,
+          };
+        }
+
+        const aiResponse = await sendToBackend({
+          message: message.message as string,
+          mode: "conversation",
+          domSnapshot,
           selectedElement,
           conversationHistory,
         });
@@ -220,7 +241,7 @@ async function handleMessage(
           applyResult = (await sendToContentScript(tabId, {
             type: MessageType.APPLY_CHANGES,
             changes: aiResponse.changes,
-          })) as typeof applyResult;
+          })) as typeof applyResult ?? {};
 
           const selectors = aiResponse.changes
             .filter((c) => c.type === "css" && c.selector)
@@ -238,7 +259,7 @@ async function handleMessage(
         }).catch(() => {});
 
         let enrichedResponse = aiResponse;
-        const failures = applyResult.failures || [];
+        const failures = applyResult?.failures || [];
         if (failures.length > 0) {
           const failureNote = failures
             .map((f) => `"${f.selector}": ${f.reason}`)

@@ -56,7 +56,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
         <button
           onClick={handleSend}
           disabled={disabled || !text.trim()}
-          className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 disabled:opacity-20 disabled:hover:from-violet-500 disabled:hover:to-purple-600 flex items-center justify-center transition-all duration-200 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-105 active:scale-95"
+          className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 disabled:opacity-20 disabled:hover:from-orange-500 disabled:hover:to-amber-600 flex items-center justify-center transition-all duration-200 shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:scale-105 active:scale-95"
           title="Send message"
         >
           <svg

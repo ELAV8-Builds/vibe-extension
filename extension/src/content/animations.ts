@@ -30,19 +30,19 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
 
       @keyframes vibe-shimmer {
         0% {
-          box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.5), inset 0 0 0 0 rgba(6, 182, 212, 0.1);
+          box-shadow: 0 0 0 0 rgba(232, 115, 42, 0.5), inset 0 0 0 0 rgba(42, 143, 212, 0.1);
           transform: scale(1);
         }
         30% {
-          box-shadow: 0 0 20px 6px rgba(124, 58, 237, 0.3), inset 0 0 30px 0 rgba(6, 182, 212, 0.05);
+          box-shadow: 0 0 20px 6px rgba(232, 115, 42, 0.3), inset 0 0 30px 0 rgba(42, 143, 212, 0.05);
           transform: scale(1.008);
         }
         60% {
-          box-shadow: 0 0 30px 8px rgba(6, 182, 212, 0.2), inset 0 0 20px 0 rgba(124, 58, 237, 0.03);
+          box-shadow: 0 0 30px 8px rgba(42, 143, 212, 0.2), inset 0 0 20px 0 rgba(232, 115, 42, 0.03);
           transform: scale(1.003);
         }
         100% {
-          box-shadow: 0 0 0 0 rgba(124, 58, 237, 0), inset 0 0 0 0 rgba(6, 182, 212, 0);
+          box-shadow: 0 0 0 0 rgba(232, 115, 42, 0), inset 0 0 0 0 rgba(42, 143, 212, 0);
           transform: scale(1);
         }
       }
@@ -74,7 +74,7 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         overflow: hidden;
         pointer-events: none;
         animation: vibe-fade-in 0.3s ease-out;
-        background: rgba(124, 58, 237, 0.1);
+        background: rgba(232, 115, 42, 0.1);
       }
 
       #${PROGRESS_BAR_ID}::before {
@@ -84,7 +84,7 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent 0%, #7c3aed 20%, #06b6d4 50%, #7c3aed 80%, transparent 100%);
+        background: linear-gradient(90deg, transparent 0%, #e8732a 20%, #2a8fd4 50%, #e8732a 80%, transparent 100%);
         animation: vibe-progress-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         will-change: transform;
       }
@@ -96,7 +96,7 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         left: 0;
         width: 100%;
         height: 6px;
-        background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), rgba(6, 182, 212, 0.3), transparent);
+        background: linear-gradient(90deg, transparent, rgba(232, 115, 42, 0.4), rgba(42, 143, 212, 0.3), transparent);
         filter: blur(4px);
         animation: vibe-progress-pulse 2s ease-in-out infinite;
         will-change: opacity;
@@ -118,7 +118,7 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         left: 0;
         width: 100%;
         height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.6), transparent);
+        background: linear-gradient(90deg, transparent, rgba(42, 143, 212, 0.6), transparent);
         animation: vibe-scan-line 0.8s ease-out forwards;
         pointer-events: none;
       }
@@ -129,7 +129,7 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
           animation: none;
         }
         #${PROGRESS_BAR_ID}::before {
-          background: #7c3aed;
+          background: #e8732a;
           transform: none;
         }
         .vibe-shimmer-effect {
