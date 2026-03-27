@@ -38,6 +38,7 @@ export enum MessageType {
   UNDO_LAST = "UNDO_LAST",
   UNDO_ALL = "UNDO_ALL",
   GET_APPLIED_CHANGES = "GET_APPLIED_CHANGES",
+  GET_MODIFIED_HTML = "GET_MODIFIED_HTML",
 
   // Content script → Service worker / Side panel
   DOM_SNAPSHOT_RESULT = "DOM_SNAPSHOT_RESULT",
@@ -168,7 +169,12 @@ export interface ShowComparisonPayload {
 
 export interface ExportChangesPayload {
   type: MessageType.EXPORT_CHANGES;
-  format: "css" | "json" | "clipboard";
+  format: "css" | "json" | "html";
+}
+
+export interface GetModifiedHtmlPayload {
+  type: MessageType.GET_MODIFIED_HTML;
+  selector?: string;
 }
 
 export interface UpdateSettingsPayload {
@@ -248,4 +254,5 @@ export type ExtensionMessage =
   | EnableElementSelectorPayload
   | DisableElementSelectorPayload
   | GetAppliedChangesPayload
+  | GetModifiedHtmlPayload
   | HideComparisonPayload;

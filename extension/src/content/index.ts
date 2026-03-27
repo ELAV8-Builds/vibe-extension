@@ -120,6 +120,28 @@ chrome.runtime.onMessage.addListener(
         break;
       }
 
+      case MessageType.GET_MODIFIED_HTML: {
+        const selector = message.selector as string | undefined;
+        const cssState = getCssState();
+
+        let html: string;
+        if (selector) {
+          const el = document.querySelector(selector);
+          html = el instanceof HTMLElement ? el.outerHTML : "";
+        } else {
+          const clone = document.documentElement.cloneNode(true) as HTMLElement;
+          clone.querySelectorAll("[data-vibe]").forEach((el) => el.remove());
+          const vibeStyle = clone.querySelector("#vibe-changes");
+          if (vibeStyle) vibeStyle.remove();
+          const vibeAnim = clone.querySelector("#vibe-animations");
+          if (vibeAnim) vibeAnim.remove();
+          html = clone.outerHTML;
+        }
+
+        sendResponse({ html, cssState, url: window.location.href, title: document.title });
+        break;
+      }
+
       default:
         break;
     }

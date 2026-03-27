@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useChatStore } from "../stores/chatStore";
 import { MessageType } from "../../shared/messages";
 
-type ExportFormat = "css" | "json" | "clipboard";
+type ExportFormat = "css" | "json" | "html";
 
 export function ExportPanel() {
   const { exportContent, exportFormat, setExportFormat, setExportContent } =
@@ -58,9 +58,10 @@ export function ExportPanel() {
   }, [exportContent]);
 
   const handleDownload = useCallback(() => {
-    const ext = exportFormat === "css" ? "css" : "json";
-    const mimeType =
-      exportFormat === "css" ? "text/css" : "application/json";
+    const extMap: Record<string, string> = { css: "css", json: "json", html: "html" };
+    const mimeMap: Record<string, string> = { css: "text/css", json: "application/json", html: "text/html" };
+    const ext = extMap[exportFormat] || "txt";
+    const mimeType = mimeMap[exportFormat] || "text/plain";
     const blob = new Blob([exportContent], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -75,7 +76,7 @@ export function ExportPanel() {
       {/* Format selector */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-vibe-border shrink-0">
         <span className="text-xs text-vibe-muted">Format:</span>
-        {(["css", "json"] as const).map((fmt) => (
+        {(["css", "json", "html"] as const).map((fmt) => (
           <button
             key={fmt}
             onClick={() => handleFormatChange(fmt)}

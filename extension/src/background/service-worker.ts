@@ -409,6 +409,34 @@ async function handleMessage(
       if (!tabId) throw new Error("No active tab found");
       const format = message.format as string;
 
+      if (format === "html") {
+        const result = (await sendToContentScript(tabId, {
+          type: MessageType.GET_MODIFIED_HTML,
+        })) as { html: string; cssState: string; url: string; title: string } | undefined;
+
+        const html = result?.html ?? "";
+        const cssState = result?.cssState ?? "";
+        const title = result?.title ?? "";
+        const url = result?.url ?? "";
+
+        const doc = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title}</title>
+<!-- Vibe Design Changes — exported from ${url} -->
+<style>
+${cssState}
+</style>
+</head>
+<body>
+${html}
+</body>
+</html>`;
+        return { content: doc };
+      }
+
       const state = (await sendToContentScript(tabId, {
         type: MessageType.GET_APPLIED_CHANGES,
       })) as { changes: unknown[]; cssState: string };

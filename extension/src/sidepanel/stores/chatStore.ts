@@ -29,7 +29,7 @@ interface ChatState {
 
   // Export
   exportContent: string;
-  exportFormat: "css" | "json" | "clipboard";
+  exportFormat: "css" | "json" | "html";
 
   // Actions
   addMessage: (message: Message) => void;
@@ -49,7 +49,7 @@ interface ChatState {
   setSettings: (settings: Partial<ExtensionSettings>) => void;
 
   setExportContent: (content: string) => void;
-  setExportFormat: (format: "css" | "json" | "clipboard") => void;
+  setExportFormat: (format: "css" | "json" | "html") => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
