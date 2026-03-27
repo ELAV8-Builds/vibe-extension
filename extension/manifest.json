@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Vibe — AI Design Tool",
+  "description": "AI-powered live website redesign, directly in the browser.",
+  "version": "0.1.0",
+  "permissions": [
+    "activeTab",
+    "sidePanel",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:5100/*"
+  ],
+  "side_panel": {
+    "default_path": "public/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "public/icons/icon16.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Vibe — AI Design Tool"
+  }
+}

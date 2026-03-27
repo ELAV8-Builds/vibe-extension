@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ─── Custom Theme ─── */
+
+@theme {
+  --color-vibe-bg: #0f0f23;
+  --color-vibe-card: #1a1a3e;
+  --color-vibe-text: #e0e0ff;
+  --color-vibe-muted: #8888aa;
+  --color-vibe-accent: #6366f1;
+  --color-vibe-accent-hover: #818cf8;
+  --color-vibe-user: #3730a3;
+  --color-vibe-success: #22c55e;
+  --color-vibe-error: #ef4444;
+  --color-vibe-warning: #f59e0b;
+  --color-vibe-border: #2a2a5e;
+}
+
+/* ─── Base Styles ─── */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-vibe-bg);
+  color: var(--color-vibe-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Scrollbar Styling ─── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-vibe-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-vibe-muted);
+}
+
+/* ─── Animations ─── */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.2s ease-out;
+}
+
+.animate-pulse-dot {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+/* ─── Tab Transition ─── */
+
+.tab-content {
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* ─── Focus Styles ─── */
+
+*:focus-visible {
+  outline: 2px solid var(--color-vibe-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Selection ─── */
+
+::selection {
+  background: var(--color-vibe-accent);
+  color: white;
+}
