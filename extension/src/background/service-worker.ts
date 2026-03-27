@@ -238,10 +238,28 @@ async function handleMessage(
         } = {};
 
         if (aiResponse.changes && aiResponse.changes.length > 0) {
-          applyResult = (await sendToContentScript(tabId, {
+          const rawResult = (await sendToContentScript(tabId, {
             type: MessageType.APPLY_CHANGES,
             changes: aiResponse.changes,
-          })) as typeof applyResult ?? {};
+          })) as (typeof applyResult & { pendingScripts?: string[] }) | undefined ?? {};
+          const { pendingScripts: scripts, ...rest } = rawResult;
+          applyResult = rest;
+
+          if (scripts && scripts.length > 0) {
+            for (const code of scripts) {
+              await chrome.scripting.executeScript({
+                target: { tabId },
+                world: "MAIN",
+                func: (src: string) => {
+                  const fn = new Function(src);
+                  fn();
+                },
+                args: [code],
+              }).catch((err) => {
+                console.warn("[Vibe SW] Script execution failed:", err);
+              });
+            }
+          }
 
           const selectors = aiResponse.changes
             .filter((c) => c.type === "css" && c.selector)

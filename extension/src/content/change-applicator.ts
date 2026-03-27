@@ -7,6 +7,7 @@ import { VIBE_STYLE_TAG_ID } from "../shared/constants";
 
 let appliedChanges: AppliedChange[] = [];
 let changeCounter = 0;
+let pendingScripts: string[] = [];
 
 // ─── Style Tag Management ───
 
@@ -220,17 +221,18 @@ function applyDomChange(instruction: ChangeInstruction): boolean {
               console.warn("[Vibe] Blocked replaceHTML containing extension/cookie API access");
               break;
             }
-            el.innerHTML = html;
-            el.querySelectorAll("script").forEach((script) => {
-              const fresh = document.createElement("script");
-              if (script.src) {
-                fresh.src = script.src;
-              } else {
-                const blob = new Blob([script.textContent || ""], { type: "text/javascript" });
-                fresh.src = URL.createObjectURL(blob);
-              }
-              script.parentNode?.replaceChild(fresh, script);
+            const scriptContents: string[] = [];
+            const parser = new DOMParser();
+            const parsed = parser.parseFromString(html, "text/html");
+            parsed.querySelectorAll("script").forEach((script) => {
+              if (script.src) return;
+              if (script.textContent) scriptContents.push(script.textContent);
+              script.remove();
             });
+            el.innerHTML = parsed.body.innerHTML;
+            if (scriptContents.length > 0) {
+              pendingScripts.push(...scriptContents);
+            }
           }
           break;
 
@@ -290,7 +292,12 @@ function verifyCssChange(
   selector: string,
   properties: Record<string, string>
 ): { verified: boolean; failedProps: string[]; matchCount: number } {
-  const elements = document.querySelectorAll(selector);
+  let elements: NodeListOf<Element>;
+  try {
+    elements = document.querySelectorAll(selector);
+  } catch {
+    return { verified: true, failedProps: [], matchCount: 0 };
+  }
   if (elements.length === 0) {
     return { verified: false, failedProps: Object.keys(properties), matchCount: 0 };
   }
@@ -326,7 +333,12 @@ function applyInlineFallback(
   failedProps: string[],
   properties: Record<string, string>
 ): number {
-  const elements = document.querySelectorAll(selector);
+  let elements: NodeListOf<Element>;
+  try {
+    elements = document.querySelectorAll(selector);
+  } catch {
+    return 0;
+  }
   let applied = 0;
 
   elements.forEach((el) => {
@@ -472,6 +484,12 @@ export function undoAll(): void {
 
 export function getAppliedChanges(): AppliedChange[] {
   return [...appliedChanges];
+}
+
+export function drainPendingScripts(): string[] {
+  const scripts = pendingScripts.slice();
+  pendingScripts = [];
+  return scripts;
 }
 
 export function getCssState(): string {

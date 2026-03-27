@@ -4,7 +4,7 @@
 import { MessageType } from "../shared/messages";
 import type { ChangeInstruction } from "../shared/types";
 import { extractDOMSnapshot } from "./dom-reader";
-import { applyChanges, undoLast, undoAll, getAppliedChanges, getCssState } from "./change-applicator";
+import { applyChanges, undoLast, undoAll, getAppliedChanges, getCssState, drainPendingScripts } from "./change-applicator";
 import { enableSelector, disableSelector } from "./element-selector";
 import { showProgress, hideProgress, shimmerElements } from "./animations";
 import { captureSnapshotState, restoreSnapshotState } from "./snapshot";
@@ -28,9 +28,9 @@ chrome.runtime.onMessage.addListener(
       case MessageType.APPLY_CHANGES: {
         const changes = message.changes as ChangeInstruction[];
         const result = applyChanges(changes);
-        sendResponse({ type: MessageType.CHANGES_APPLIED, ...result });
+        const scripts = drainPendingScripts();
+        sendResponse({ type: MessageType.CHANGES_APPLIED, ...result, pendingScripts: scripts });
 
-        // Shimmer changed elements
         const selectors = changes
           .filter((c) => c.type === "css" && c.selector)
           .map((c) => c.selector as string);
