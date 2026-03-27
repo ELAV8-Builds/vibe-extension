@@ -2,7 +2,6 @@
 
 import type { ChangeInstruction, AppliedChange } from "../shared/types";
 import { VIBE_STYLE_TAG_ID } from "../shared/constants";
-import DOMPurify from "dompurify";
 
 // ─── State ───
 
@@ -66,21 +65,22 @@ function applyCssChange(
 ): { id: string; cssRule: string } | null {
   if (!instruction.selector || !instruction.properties) return null;
 
-  // Validate selector
-  if (!isSafeSelector(instruction.selector)) {
-    console.warn("[Vibe] Rejected unsafe CSS selector:", instruction.selector);
-    return null;
+  const isAtRule = instruction.selector.startsWith("@");
+
+  if (!isAtRule) {
+    if (!isSafeSelector(instruction.selector)) {
+      console.warn("[Vibe] Rejected unsafe CSS selector:", instruction.selector);
+      return null;
+    }
+
+    try {
+      document.querySelector(instruction.selector);
+    } catch {
+      console.warn("[Vibe] Invalid CSS selector:", instruction.selector);
+      return null;
+    }
   }
 
-  // Validate the selector actually parses
-  try {
-    document.querySelector(instruction.selector);
-  } catch {
-    console.warn("[Vibe] Invalid CSS selector:", instruction.selector);
-    return null;
-  }
-
-  // Check CSS rule count limit
   if (appliedChanges.filter((c) => c.cssRule).length >= MAX_CSS_RULES) {
     console.warn("[Vibe] Maximum CSS rule limit reached (" + MAX_CSS_RULES + ")");
     return null;
@@ -89,7 +89,7 @@ function applyCssChange(
   const id = `vibe-change-${++changeCounter}`;
   const propEntries = Object.entries(instruction.properties).filter(
     ([key, value]) => {
-      if (!isSafePropertyName(key)) {
+      if (!isAtRule && !isSafePropertyName(key)) {
         console.warn("[Vibe] Rejected unsafe CSS property:", key);
         return false;
       }
@@ -103,15 +103,22 @@ function applyCssChange(
 
   if (propEntries.length === 0) return null;
 
-  const props = propEntries
-    .map(([key, value]) => {
-      // Add !important for higher specificity
-      const val = value.endsWith("!important") ? value : `${value} !important`;
-      return `  ${key}: ${val};`;
-    })
-    .join("\n");
+  let cssRule: string;
 
-  const cssRule = `/* ${escapeCssComment(id)} */\n:root ${instruction.selector} {\n${props}\n}`;
+  if (isAtRule) {
+    const inner = propEntries
+      .map(([key, value]) => `  ${key} { ${value} }`)
+      .join("\n");
+    cssRule = `/* ${escapeCssComment(id)} */\n${instruction.selector} {\n${inner}\n}`;
+  } else {
+    const props = propEntries
+      .map(([key, value]) => {
+        const val = value.endsWith("!important") ? value : `${value} !important`;
+        return `  ${key}: ${val};`;
+      })
+      .join("\n");
+    cssRule = `/* ${escapeCssComment(id)} */\n:root ${instruction.selector} {\n${props}\n}`;
+  }
 
   return { id, cssRule };
 }
@@ -208,31 +215,22 @@ function applyDomChange(instruction: ChangeInstruction): boolean {
 
         case "replaceHTML":
           if (instruction.value !== undefined && el instanceof HTMLElement) {
-            const clean = DOMPurify.sanitize(instruction.value, {
-              ALLOWED_TAGS: [
-                "div", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6",
-                "a", "img", "ul", "ol", "li", "br", "hr", "strong", "em",
-                "b", "i", "u", "s", "small", "mark", "sub", "sup",
-                "blockquote", "pre", "code", "table", "thead", "tbody",
-                "tr", "th", "td", "section", "article", "header", "footer",
-                "nav", "main", "aside", "figure", "figcaption", "details",
-                "summary", "button", "label", "input", "select", "option",
-                "textarea", "form", "fieldset", "legend", "video", "audio",
-                "source", "picture", "svg", "path", "circle", "rect",
-                "line", "polyline", "polygon", "g", "defs", "use",
-              ],
-              ALLOWED_ATTR: [
-                "class", "id", "href", "src", "alt", "title", "style",
-                "width", "height", "target", "rel", "type", "placeholder",
-                "value", "name", "for", "role", "aria-label", "aria-hidden",
-                "data-*", "viewBox", "fill", "stroke", "stroke-width", "d",
-                "cx", "cy", "r", "x", "y", "x1", "y1", "x2", "y2",
-                "points", "transform",
-              ],
-              FORBID_TAGS: ["script", "iframe", "object", "embed", "link"],
-              FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+            const html = instruction.value;
+            const blocked = /chrome\s*\.\s*(runtime|extension|storage|tabs|cookies)|document\s*\.\s*cookie|window\s*\.\s*opener|eval\s*\(|Function\s*\(/i;
+            if (blocked.test(html)) {
+              console.warn("[Vibe] Blocked replaceHTML containing extension/cookie API access");
+              break;
+            }
+            el.innerHTML = html;
+            el.querySelectorAll("script").forEach((script) => {
+              const fresh = document.createElement("script");
+              if (script.src) {
+                fresh.src = script.src;
+              } else {
+                fresh.textContent = script.textContent;
+              }
+              script.parentNode?.replaceChild(fresh, script);
             });
-            el.innerHTML = clean;
           }
           break;
 

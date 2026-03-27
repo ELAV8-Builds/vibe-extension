@@ -62,9 +62,11 @@ RULES:
 15. Synthesize ALL design decisions from the conversation into one cohesive set of changes.
 16. DOM action reference:
     - setText: set "value" to the new text content.
-    - replaceHTML: set "value" to the new HTML string. Use this to rebuild sections with new markup. Keep HTML clean and semantic.
+    - replaceHTML: set "value" to the new HTML string. This can include <script> tags for interactive features like canvas animations, particle systems, scroll effects, and mouse tracking. Inline scripts are executed on the page. Keep HTML clean and semantic.
     - moveElement: set "value" to the CSS selector of the destination parent to append the element into.
-    - wrapElement: set "value" to the wrapper tag name (div, section, etc.) and optionally "attribute" to the wrapper's class name.`;
+    - wrapElement: set "value" to the wrapper tag name (div, section, etc.) and optionally "attribute" to the wrapper's class name.
+17. CSS at-rules: For @keyframes and other at-rules, use the at-rule as the "selector" (e.g. "@keyframes fadeIn") and keyframe stops as property keys with their declarations as values (e.g. "0%": "opacity: 0; transform: translateY(10px)", "100%": "opacity: 1; transform: translateY(0)").
+18. When using replaceHTML with scripts: write self-contained inline JavaScript. Never use external CDN scripts unless the user asks. Make canvas/animation code handle window resizing. Use requestAnimationFrame for smooth animations.`;
 
 function buildConversationPrompt(
   message: string,
