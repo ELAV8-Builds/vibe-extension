@@ -137,14 +137,14 @@ export function ChatPanel() {
                   Designing...
                 </span>
                 <div className="flex gap-1">
-                  <span className="w-8 h-1 rounded-full bg-vibe-accent/30 overflow-hidden">
-                    <span className="block w-full h-full bg-gradient-to-r from-orange-500 to-blue-400 animate-gradient rounded-full" />
+                  <span className="designing-dash w-8 h-1 rounded-full bg-vibe-accent/30 overflow-hidden">
+                    <span className="block w-full h-full bg-gradient-to-r from-orange-500 via-amber-400 to-blue-400 rounded-full" />
                   </span>
-                  <span className="w-5 h-1 rounded-full bg-vibe-accent/20 overflow-hidden">
-                    <span className="block w-full h-full bg-gradient-to-r from-blue-400 to-orange-500 animate-gradient rounded-full" style={{ animationDelay: "0.3s" }} />
+                  <span className="designing-dash w-5 h-1 rounded-full bg-vibe-accent/20 overflow-hidden">
+                    <span className="block w-full h-full bg-gradient-to-r from-blue-400 via-amber-400 to-orange-500 rounded-full" style={{ animationDelay: "0.2s" }} />
                   </span>
-                  <span className="w-3 h-1 rounded-full bg-vibe-accent/10 overflow-hidden">
-                    <span className="block w-full h-full bg-gradient-to-r from-orange-500 to-blue-400 animate-gradient rounded-full" style={{ animationDelay: "0.6s" }} />
+                  <span className="designing-dash w-3 h-1 rounded-full bg-vibe-accent/10 overflow-hidden">
+                    <span className="block w-full h-full bg-gradient-to-r from-orange-500 via-amber-400 to-blue-400 rounded-full" style={{ animationDelay: "0.4s" }} />
                   </span>
                 </div>
               </div>

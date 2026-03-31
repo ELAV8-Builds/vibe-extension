@@ -36,6 +36,7 @@ export const AIDesignResponseSchema = z.object({
   description: z.string(),
   suggestions: z.array(z.string()).max(3),
   reasoning: z.string().optional(),
+  contextWarning: z.string().optional(),
 });
 
 export type CSSChange = z.infer<typeof CSSChangeSchema>;

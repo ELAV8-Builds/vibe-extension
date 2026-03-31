@@ -3,7 +3,7 @@
 
 import { MessageType } from "../shared/messages";
 import type { ChangeInstruction } from "../shared/types";
-import { extractDOMSnapshot } from "./dom-reader";
+import { extractDOMSnapshot, extractFullPageSource, extractPageStyles } from "./dom-reader";
 import { applyChanges, undoLast, undoAll, getAppliedChanges, getCssState, drainPendingScripts } from "./change-applicator";
 import { enableSelector, disableSelector } from "./element-selector";
 import { showProgress, hideProgress, shimmerElements, showMatrixRain } from "./animations";
@@ -22,6 +22,19 @@ chrome.runtime.onMessage.addListener(
       case MessageType.REQUEST_DOM_SNAPSHOT: {
         const snapshot = extractDOMSnapshot();
         sendResponse({ type: MessageType.DOM_SNAPSHOT_RESULT, snapshot });
+        break;
+      }
+
+      case MessageType.REQUEST_FULL_CONTEXT: {
+        const fullSnapshot = extractDOMSnapshot();
+        const pageSource = extractFullPageSource();
+        const pageStyles = extractPageStyles();
+        sendResponse({
+          type: MessageType.FULL_CONTEXT_RESULT,
+          snapshot: fullSnapshot,
+          pageSource,
+          pageStyles,
+        });
         break;
       }
 

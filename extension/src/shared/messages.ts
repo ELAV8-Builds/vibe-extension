@@ -26,6 +26,7 @@ export enum MessageType {
   // Service worker → Content script
   APPLY_CHANGES = "APPLY_CHANGES",
   REQUEST_DOM_SNAPSHOT = "REQUEST_DOM_SNAPSHOT",
+  REQUEST_FULL_CONTEXT = "REQUEST_FULL_CONTEXT",
   ENABLE_ELEMENT_SELECTOR = "ENABLE_ELEMENT_SELECTOR",
   DISABLE_ELEMENT_SELECTOR = "DISABLE_ELEMENT_SELECTOR",
   SHOW_PROGRESS = "SHOW_PROGRESS",
@@ -43,6 +44,7 @@ export enum MessageType {
   // Content script → Service worker / Side panel
   EXECUTE_SCRIPT = "EXECUTE_SCRIPT",
   DOM_SNAPSHOT_RESULT = "DOM_SNAPSHOT_RESULT",
+  FULL_CONTEXT_RESULT = "FULL_CONTEXT_RESULT",
   ELEMENT_SELECTED = "ELEMENT_SELECTED",
   CHANGES_APPLIED = "CHANGES_APPLIED",
   SNAPSHOT_STATE_CAPTURED = "SNAPSHOT_STATE_CAPTURED",
@@ -204,6 +206,17 @@ export interface RequestDomSnapshotPayload {
   type: MessageType.REQUEST_DOM_SNAPSHOT;
 }
 
+export interface RequestFullContextPayload {
+  type: MessageType.REQUEST_FULL_CONTEXT;
+}
+
+export interface FullContextResultPayload {
+  type: MessageType.FULL_CONTEXT_RESULT;
+  snapshot: DOMSnapshot;
+  pageSource: string;
+  pageStyles: string;
+}
+
 export interface EnableElementSelectorPayload {
   type: MessageType.ENABLE_ELEMENT_SELECTOR;
 }
@@ -252,6 +265,8 @@ export type ExtensionMessage =
   | UndoLastPayload
   | UndoAllPayload
   | RequestDomSnapshotPayload
+  | RequestFullContextPayload
+  | FullContextResultPayload
   | EnableElementSelectorPayload
   | DisableElementSelectorPayload
   | GetAppliedChangesPayload

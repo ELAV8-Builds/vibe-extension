@@ -86,6 +86,9 @@ interface BackendRequest {
   message: string;
   mode: "conversation" | "apply";
   domSnapshot?: DOMSnapshot;
+  pageSource?: string;
+  pageStyles?: string;
+  screenshot?: string;
   selectedElement?: SelectedElement;
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>;
 }
@@ -150,7 +153,6 @@ async function handleMessage(
     // ─── Side Panel → Service Worker ───
 
     case MessageType.SEND_MESSAGE: {
-      // Conversation mode: send real snapshot so the AI can see the page
       try {
         const tabId = await getActiveTabId();
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -159,14 +161,26 @@ async function handleMessage(
           Array<{ role: "user" | "assistant"; content: string }> | undefined;
 
         let domSnapshot: DOMSnapshot | undefined;
+        let pageSource: string | undefined;
+        let pageStyles: string | undefined;
+        let screenshot: string | undefined;
+
         if (tabId) {
           try {
             const result = (await sendToContentScript(tabId, {
-              type: MessageType.REQUEST_DOM_SNAPSHOT,
-            })) as { snapshot: DOMSnapshot } | undefined;
+              type: MessageType.REQUEST_FULL_CONTEXT,
+            })) as { snapshot: DOMSnapshot; pageSource: string; pageStyles: string } | undefined;
             domSnapshot = result?.snapshot;
+            pageSource = result?.pageSource;
+            pageStyles = result?.pageStyles;
           } catch {
             // Content script may not be injected yet; fall back to minimal context
+          }
+
+          try {
+            screenshot = await captureScreenshot();
+          } catch {
+            // Screenshot failure is non-fatal
           }
         }
         if (!domSnapshot && tab?.url) {
@@ -185,6 +199,9 @@ async function handleMessage(
           message: message.message as string,
           mode: "conversation",
           domSnapshot,
+          pageSource,
+          pageStyles,
+          screenshot,
           selectedElement,
           conversationHistory,
         });
@@ -206,7 +223,6 @@ async function handleMessage(
     }
 
     case MessageType.APPLY_DESIGN: {
-      // Apply mode: full snapshot, generate and apply changes
       const tabId = await getActiveTabId();
       if (!tabId) throw new Error("No active tab found");
 
@@ -215,9 +231,16 @@ async function handleMessage(
       }).catch(() => {});
 
       try {
-        const snapshotResult = (await sendToContentScript(tabId, {
-          type: MessageType.REQUEST_DOM_SNAPSHOT,
-        })) as { snapshot: DOMSnapshot };
+        const fullContext = (await sendToContentScript(tabId, {
+          type: MessageType.REQUEST_FULL_CONTEXT,
+        })) as { snapshot: DOMSnapshot; pageSource: string; pageStyles: string };
+
+        let screenshot: string | undefined;
+        try {
+          screenshot = await captureScreenshot();
+        } catch {
+          // Screenshot failure is non-fatal
+        }
 
         const selectedElement = message.selectedElement as SelectedElement | undefined;
         const conversationHistory = message.conversationHistory as
@@ -226,7 +249,10 @@ async function handleMessage(
         const aiResponse = await sendToBackend({
           message: "Apply the design changes discussed in the conversation.",
           mode: "apply",
-          domSnapshot: snapshotResult.snapshot,
+          domSnapshot: fullContext.snapshot,
+          pageSource: fullContext.pageSource,
+          pageStyles: fullContext.pageStyles,
+          screenshot,
           selectedElement,
           conversationHistory,
         });

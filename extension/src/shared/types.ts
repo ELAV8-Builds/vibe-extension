@@ -54,6 +54,7 @@ export interface AIDesignResponse {
   description: string;
   suggestions: string[];
   reasoning?: string;
+  contextWarning?: string;
 }
 
 // ─── Session & Messages ───
@@ -75,6 +76,7 @@ export interface Message {
   changes?: ChangeInstruction[];
   description?: string;
   suggestions?: string[];
+  contextWarning?: string;
   timestamp: string;
 }
 

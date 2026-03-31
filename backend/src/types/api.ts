@@ -143,6 +143,9 @@ export const ChatRequestSchema = z.object({
   message: z.string().min(1).max(10000),
   mode: z.enum(["conversation", "apply"]).default("apply"),
   domSnapshot: DOMSnapshotSchema.optional(),
+  pageSource: z.string().max(1000000).optional(),
+  pageStyles: z.string().max(1000000).optional(),
+  screenshot: z.string().max(5000000).optional(),
   selectedElement: SelectedElementSchema.optional(),
   conversationHistory: z
     .array(

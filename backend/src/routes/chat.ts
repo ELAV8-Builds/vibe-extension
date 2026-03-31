@@ -39,20 +39,23 @@ export function createChatRoute(aiService: AIService): Hono {
       return c.json(err, 400);
     }
 
-    const { message, mode, domSnapshot, selectedElement, conversationHistory } =
+    const { message, mode, domSnapshot, pageSource, pageStyles, screenshot, selectedElement, conversationHistory } =
       parsed.data;
     let { sessionId } = parsed.data;
 
-    // Guard against excessively large DOM snapshots (500KB limit)
-    if (domSnapshot) {
-      const snapshotJson = JSON.stringify(domSnapshot);
-      if (snapshotJson.length > 512 * 1024) {
-        const err: ErrorResponse = {
-          error: "DOM snapshot too large",
-          details: `Snapshot is ${Math.round(snapshotJson.length / 1024)}KB. Maximum is 512KB.`,
-        };
-        return c.json(err, 413);
-      }
+    console.log(`[Chat] mode=${mode} screenshot=${screenshot ? `${Math.round(screenshot.length / 1024)}KB` : "none"} pageSource=${pageSource ? `${Math.round(pageSource.length / 1024)}KB` : "none"} pageStyles=${pageStyles ? `${Math.round(pageStyles.length / 1024)}KB` : "none"}`);
+
+    // Guard against excessively large payloads (2MB total for snapshot + source + styles)
+    const snapshotSize = domSnapshot ? JSON.stringify(domSnapshot).length : 0;
+    const sourceSize = pageSource?.length ?? 0;
+    const stylesSize = pageStyles?.length ?? 0;
+    const totalContextSize = snapshotSize + sourceSize + stylesSize;
+    if (totalContextSize > 2 * 1024 * 1024) {
+      const err: ErrorResponse = {
+        error: "Page context too large",
+        details: `Total context is ${Math.round(totalContextSize / 1024)}KB. Maximum is 2048KB.`,
+      };
+      return c.json(err, 413);
     }
 
     try {
@@ -110,7 +113,10 @@ export function createChatRoute(aiService: AIService): Hono {
         mode,
         domSnapshot,
         selectedElement,
-        conversationHistory
+        conversationHistory,
+        pageSource,
+        pageStyles,
+        screenshot
       );
 
       // Store the AI response

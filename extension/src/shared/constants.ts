@@ -9,7 +9,7 @@ export const VIBE_ANIMATIONS_TAG_ID = "vibe-animations";
 // ─── DOM Reader ───
 export const MAX_DOM_DEPTH = 12;
 export const MAX_TEXT_LENGTH = 100;
-export const MAX_SNAPSHOT_SIZE_KB = 60;
+export const MAX_SNAPSHOT_SIZE_KB = 200;
 export const COLLAPSED_THRESHOLD = 5;
 
 // ─── Element Selector ───

@@ -43,6 +43,7 @@ export function useChat() {
           changes: response.changes,
           description: response.description,
           suggestions: response.suggestions,
+          contextWarning: response.contextWarning,
           timestamp: new Date().toISOString(),
         };
         addMessage(aiMessage);

@@ -374,3 +374,122 @@ export function extractDOMSnapshot(): DOMSnapshot {
 
   return snapshot;
 }
+
+// ─── Full Page Source Extractor ───
+
+/**
+ * Grab the full rendered HTML, cleaned of scripts, inline styles,
+ * vibe-injected elements, and SVG internals. This gives the AI model
+ * the real class names, attributes, and nesting structure.
+ */
+export function extractFullPageSource(): string {
+  const clone = document.documentElement.cloneNode(true) as HTMLElement;
+
+  // Remove vibe-injected elements
+  clone.querySelectorAll("[data-vibe], #vibe-changes, #vibe-animations").forEach((el) => el.remove());
+
+  // Hollow out <script> tags — keep the tag so structure is visible
+  clone.querySelectorAll("script").forEach((el) => {
+    el.textContent = "";
+  });
+
+  // Hollow out <style> tags — CSS is sent separately
+  clone.querySelectorAll("style").forEach((el) => {
+    el.textContent = "";
+  });
+
+  // Collapse SVG internals to save space
+  clone.querySelectorAll("svg").forEach((el) => {
+    const attrs = Array.from(el.attributes)
+      .map((a) => `${a.name}="${a.value}"`)
+      .join(" ");
+    const placeholder = document.createElement("svg");
+    for (const attr of el.attributes) {
+      placeholder.setAttribute(attr.name, attr.value);
+    }
+    placeholder.innerHTML = "<!-- icon -->";
+    el.replaceWith(placeholder);
+  });
+
+  // Remove iframes, objects, embeds
+  clone.querySelectorAll("iframe, object, embed").forEach((el) => el.remove());
+
+  let html = clone.outerHTML;
+
+  // Collapse runs of whitespace/blank lines
+  html = html.replace(/\n\s*\n/g, "\n");
+  html = html.replace(/[ \t]{2,}/g, " ");
+
+  return html;
+}
+
+// ─── Active CSS Rules Extractor ───
+
+/**
+ * Collect CSS rules from all accessible same-origin stylesheets.
+ * Cross-origin sheets are skipped (they throw on .cssRules access).
+ */
+const NOISE_AT_RULES = new Set(["@font-face", "@keyframes", "@-webkit-keyframes", "@-moz-keyframes"]);
+const MAX_RULE_LENGTH = 2000;
+
+function isNoiseRule(rule: CSSRule): boolean {
+  const text = rule.cssText;
+
+  // Skip @font-face and @keyframes — large, not useful for design changes
+  for (const prefix of NOISE_AT_RULES) {
+    if (text.startsWith(prefix)) return true;
+  }
+
+  // Skip rules with base64 data URIs (background images, custom fonts)
+  if (text.includes("base64,")) return true;
+
+  // Skip extremely long rules (usually generated/minified blobs)
+  if (text.length > MAX_RULE_LENGTH) return true;
+
+  return false;
+}
+
+const MAX_STYLES_OUTPUT = 500000;
+
+export function extractPageStyles(): string {
+  const seen = new Set<string>();
+  const rules: string[] = [];
+  let totalLength = 0;
+
+  for (const sheet of Array.from(document.styleSheets)) {
+    try {
+      const ownerNode = sheet.ownerNode;
+      if (ownerNode instanceof HTMLElement) {
+        if (
+          ownerNode.id === "vibe-changes" ||
+          ownerNode.id === "vibe-animations" ||
+          ownerNode.getAttribute("data-vibe") === "true"
+        ) {
+          continue;
+        }
+      }
+
+      const cssRules = sheet.cssRules;
+      if (!cssRules) continue;
+
+      for (const rule of Array.from(cssRules)) {
+        if (isNoiseRule(rule)) continue;
+
+        const text = rule.cssText;
+        if (seen.has(text)) continue;
+
+        if (totalLength + text.length > MAX_STYLES_OUTPUT) break;
+
+        seen.add(text);
+        rules.push(text);
+        totalLength += text.length + 1;
+      }
+
+      if (totalLength >= MAX_STYLES_OUTPUT) break;
+    } catch {
+      // Cross-origin sheet — skip
+    }
+  }
+
+  return rules.join("\n");
+}

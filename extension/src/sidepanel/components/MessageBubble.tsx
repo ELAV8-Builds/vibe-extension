@@ -36,6 +36,14 @@ export function MessageBubble({ message, onSuggestionClick }: MessageBubbleProps
   return (
     <div className="flex justify-start animate-slide-in">
       <div className="glass-card rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-sm max-w-[90%] space-y-2.5">
+        {/* Context warning */}
+        {message.contextWarning && (
+          <div className="flex items-center gap-1.5 bg-yellow-500/10 text-yellow-400 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-yellow-500/20">
+            <span className="shrink-0">&#9888;</span>
+            {message.contextWarning}
+          </div>
+        )}
+
         {/* Description */}
         <p className="text-vibe-text leading-relaxed">{message.description || message.content}</p>
 
