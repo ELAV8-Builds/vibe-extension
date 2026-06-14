@@ -6,7 +6,7 @@ import type { ChangeInstruction } from "../shared/types";
 import { extractDOMSnapshot, extractFullPageSource, extractPageStyles } from "./dom-reader";
 import { applyChanges, undoLast, undoAll, getAppliedChanges, getCssState, drainPendingScripts } from "./change-applicator";
 import { enableSelector, disableSelector } from "./element-selector";
-import { showProgress, hideProgress, shimmerElements, showMatrixRain } from "./animations";
+import { showProgress, hideProgress, shimmerElements } from "./animations";
 import { captureSnapshotState, restoreSnapshotState } from "./snapshot";
 import { showComparison, hideComparison } from "./comparison";
 
@@ -40,7 +40,6 @@ chrome.runtime.onMessage.addListener(
 
       case MessageType.APPLY_CHANGES: {
         const changes = message.changes as ChangeInstruction[];
-        showMatrixRain();
         const result = applyChanges(changes);
         const scripts = drainPendingScripts();
         sendResponse({ type: MessageType.CHANGES_APPLIED, ...result, pendingScripts: scripts });

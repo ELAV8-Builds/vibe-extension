@@ -272,19 +272,22 @@ async function handleMessage(
           applyResult = rest;
 
           if (scripts && scripts.length > 0) {
-            for (const code of scripts) {
-              await chrome.scripting.executeScript({
-                target: { tabId },
-                world: "MAIN",
-                func: (src: string) => {
-                  const fn = new Function(src);
-                  fn();
-                },
-                args: [code],
-              }).catch((err) => {
-                console.warn("[Vibe SW] Script execution failed:", err);
-              });
-            }
+            const allCode = scripts.join(";\n");
+            await chrome.scripting.executeScript({
+              target: { tabId },
+              world: "MAIN",
+              func: (src: string) => {
+                requestAnimationFrame(() => {
+                  const el = document.createElement("script");
+                  el.textContent = src;
+                  document.documentElement.appendChild(el);
+                  el.remove();
+                });
+              },
+              args: [allCode],
+            }).catch((err) => {
+              console.warn("[Vibe SW] Script execution failed:", err);
+            });
           }
 
           const selectors = aiResponse.changes

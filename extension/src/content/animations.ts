@@ -120,12 +120,12 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         top: 0;
         left: 0;
         width: 100%;
-        height: 3px;
+        height: 4px;
         z-index: 2147483647;
         overflow: hidden;
         pointer-events: none;
         animation: vibe-fade-in 0.3s ease-out;
-        background: rgba(232, 115, 42, 0.1);
+        background: rgba(232, 115, 42, 0.15);
       }
 
       #${PROGRESS_BAR_ID}::before {
@@ -136,7 +136,7 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         width: 100%;
         height: 100%;
         background: linear-gradient(90deg, transparent 0%, #e8732a 20%, #2a8fd4 50%, #e8732a 80%, transparent 100%);
-        animation: vibe-progress-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        animation: vibe-progress-sweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         will-change: transform;
       }
 
@@ -146,9 +146,9 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
         top: 0;
         left: 0;
         width: 100%;
-        height: 6px;
-        background: linear-gradient(90deg, transparent, rgba(232, 115, 42, 0.4), rgba(42, 143, 212, 0.3), transparent);
-        filter: blur(4px);
+        height: 10px;
+        background: linear-gradient(90deg, transparent, rgba(232, 115, 42, 0.5), rgba(42, 143, 212, 0.4), transparent);
+        filter: blur(6px);
         animation: vibe-progress-pulse 2s ease-in-out infinite;
         will-change: opacity;
       }
@@ -203,11 +203,27 @@ function getOrCreateAnimationStyle(): HTMLStyleElement {
 // ─── Progress Bar ───
 
 let hideProgressTimer: ReturnType<typeof setTimeout> | null = null;
+let matrixLoopInterval: ReturnType<typeof setInterval> | null = null;
+
+function startMatrixLoop(): void {
+  if (matrixLoopInterval) return;
+  showMatrixRain();
+  matrixLoopInterval = setInterval(() => {
+    showMatrixRain();
+  }, MATRIX_DURATION_MS + 300);
+}
+
+function stopMatrixLoop(): void {
+  if (matrixLoopInterval) {
+    clearInterval(matrixLoopInterval);
+    matrixLoopInterval = null;
+  }
+  hideMatrixRain();
+}
 
 export function showProgress(): void {
   getOrCreateAnimationStyle();
 
-  // Cancel any pending hide
   if (hideProgressTimer) {
     clearTimeout(hideProgressTimer);
     hideProgressTimer = null;
@@ -223,22 +239,24 @@ export function showProgress(): void {
   bar.id = PROGRESS_BAR_ID;
   bar.setAttribute("data-vibe", "true");
   document.body.appendChild(bar);
+
+  startMatrixLoop();
 }
 
 export function hideProgress(): void {
+  stopMatrixLoop();
+
   const bar = document.getElementById(PROGRESS_BAR_ID);
   if (!bar) return;
 
   bar.classList.add("vibe-fading");
 
-  // Clear any previous timer to avoid stale references
   if (hideProgressTimer) {
     clearTimeout(hideProgressTimer);
   }
 
   hideProgressTimer = setTimeout(() => {
     hideProgressTimer = null;
-    // Re-check: only remove if still fading (showProgress may have been called)
     const currentBar = document.getElementById(PROGRESS_BAR_ID);
     if (currentBar && currentBar.classList.contains("vibe-fading")) {
       currentBar.remove();
